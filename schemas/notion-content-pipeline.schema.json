@@ -1,0 +1,361 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/piggywallet/open-agentic-cmo/schemas/notion-content-pipeline.schema.json",
+  "title": "Open Agentic CMO Notion Content Pipeline Artifact",
+  "description": "Canonical schema for Pumba's Notion Content Pipeline persistence verification artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "issue",
+    "subtask_issue",
+    "content_items_persisted",
+    "research_babe_persisted",
+    "duplicates_found",
+    "notes_used_for_content",
+    "timestamp",
+    "verification"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "notion_content_pipeline",
+      "description": "Artifact type. Must always be notion_content_pipeline."
+    },
+    "issue": {
+      "type": "string",
+      "description": "Parent workflow issue ID.",
+      "minLength": 1,
+      "examples": [
+        "PIG-101"
+      ]
+    },
+    "subtask_issue": {
+      "type": "string",
+      "description": "Pumba subtask issue ID.",
+      "minLength": 1,
+      "examples": [
+        "PIG-104"
+      ]
+    },
+    "content_items_persisted": {
+      "type": "integer",
+      "description": "Number of content items successfully persisted into the Notion Content Pipeline.",
+      "minimum": 0,
+      "examples": [
+        3
+      ]
+    },
+    "expected_content_items": {
+      "type": "integer",
+      "description": "Expected number of content items from the content_set artifact, when available.",
+      "minimum": 0,
+      "examples": [
+        3
+      ]
+    },
+    "research_babe_persisted": {
+      "type": "boolean",
+      "description": "Whether the Research Babe page was created or updated successfully.",
+      "const": true
+    },
+    "duplicates_found": {
+      "type": "boolean",
+      "description": "Whether duplicate content or Research Babe pages were detected during verification.",
+      "const": false
+    },
+    "notes_used_for_content": {
+      "type": "boolean",
+      "description": "Whether content was stored in Notes instead of the Notion page body.",
+      "const": false
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "ISO 8601 timestamp for when the Notion persistence verification artifact was produced.",
+      "format": "date-time",
+      "examples": [
+        "2026-05-01T14:35:00Z"
+      ]
+    },
+    "content_pages": {
+      "type": "array",
+      "description": "Optional verification details for each persisted content page.",
+      "items": {
+        "$ref": "#/$defs/content_page_verification"
+      }
+    },
+    "research_babe_page": {
+      "description": "Optional verification details for the Research Babe page.",
+      "$ref": "#/$defs/research_babe_page_verification"
+    },
+    "verification": {
+      "type": "object",
+      "description": "Structured verification results for Notion persistence.",
+      "additionalProperties": false,
+      "required": [
+        "content_pipeline_entries_verified",
+        "research_babe_page_verified",
+        "body_content_verified",
+        "required_properties_verified",
+        "thread_blocks_verified",
+        "duplicate_check_passed"
+      ],
+      "properties": {
+        "content_pipeline_entries_verified": {
+          "type": "boolean",
+          "description": "Whether all expected content entries exist in the Content Pipeline.",
+          "const": true
+        },
+        "research_babe_page_verified": {
+          "type": "boolean",
+          "description": "Whether the Research Babe page exists and includes required sections.",
+          "const": true
+        },
+        "body_content_verified": {
+          "type": "boolean",
+          "description": "Whether content is stored in the page body.",
+          "const": true
+        },
+        "required_properties_verified": {
+          "type": "boolean",
+          "description": "Whether required Notion properties are populated.",
+          "const": true
+        },
+        "thread_blocks_verified": {
+          "type": "boolean",
+          "description": "Whether thread tweets are stored as ordered body blocks when applicable.",
+          "const": true
+        },
+        "duplicate_check_passed": {
+          "type": "boolean",
+          "description": "Whether duplicate checks passed.",
+          "const": true
+        }
+      }
+    }
+  },
+  "$defs": {
+    "content_page_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "platform",
+        "scheduled_date",
+        "content_type",
+        "status",
+        "version",
+        "week",
+        "body_verified",
+        "notes_empty",
+        "properties_verified"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Persisted Notion page title.",
+          "minLength": 1
+        },
+        "platform": {
+          "type": "string",
+          "description": "Target platform.",
+          "enum": [
+            "X",
+            "LinkedIn"
+          ]
+        },
+        "scheduled_date": {
+          "type": "string",
+          "description": "Scheduled date in YYYY-MM-DD format.",
+          "format": "date"
+        },
+        "content_type": {
+          "type": "string",
+          "description": "Content type persisted in Notion.",
+          "enum": [
+            "post",
+            "thread"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "description": "Notion workflow status.",
+          "const": "Scheduled"
+        },
+        "version": {
+          "type": "string",
+          "description": "Content version.",
+          "pattern": "^v[0-9]+$"
+        },
+        "week": {
+          "type": "string",
+          "description": "ISO week in YYYY-WXX format.",
+          "pattern": "^[0-9]{4}-W[0-9]{2}$"
+        },
+        "thread_id": {
+          "type": "string",
+          "description": "Thread ID for thread content.",
+          "pattern": "^TH-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]+$"
+        },
+        "body_verified": {
+          "type": "boolean",
+          "description": "Whether the page body contains the expected content.",
+          "const": true
+        },
+        "notes_empty": {
+          "type": "boolean",
+          "description": "Whether Notes was not used for content.",
+          "const": true
+        },
+        "properties_verified": {
+          "type": "boolean",
+          "description": "Whether required properties are populated.",
+          "const": true
+        },
+        "thread_blocks_count": {
+          "type": "integer",
+          "description": "Number of body blocks used for thread tweets, when applicable.",
+          "minimum": 0
+        },
+        "expected_tweets_count": {
+          "type": "integer",
+          "description": "Expected number of tweets from the content_set artifact, when applicable.",
+          "minimum": 0
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "content_type": {
+                "const": "thread"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "thread_id",
+              "thread_blocks_count",
+              "expected_tweets_count"
+            ]
+          }
+        }
+      ]
+    },
+    "research_babe_page_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "status",
+        "required_sections_present",
+        "readable_for_humans",
+        "duplicate_found"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Research Babe page title.",
+          "minLength": 1,
+          "examples": [
+            "Research Babe — PIG-101 — May 11–13, 2026"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "description": "Research Babe page status.",
+          "enum": [
+            "Ready for Review",
+            "Verified"
+          ]
+        },
+        "required_sections_present": {
+          "type": "boolean",
+          "description": "Whether all required Research Babe sections are present.",
+          "const": true
+        },
+        "readable_for_humans": {
+          "type": "boolean",
+          "description": "Whether the page is readable for human review.",
+          "const": true
+        },
+        "duplicate_found": {
+          "type": "boolean",
+          "description": "Whether a duplicate Research Babe page was found.",
+          "const": false
+        },
+        "sections": {
+          "type": "array",
+          "description": "Research Babe sections verified in the page body.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Research Summary",
+              "Key Signals",
+              "Inconsistencies",
+              "Uncertainty / Data Gaps",
+              "Opportunities",
+              "Recommended Content Angles",
+              "Source / Workflow Metadata"
+            ]
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "type": "notion_content_pipeline",
+      "issue": "PIG-101",
+      "subtask_issue": "PIG-104",
+      "content_items_persisted": 3,
+      "expected_content_items": 3,
+      "research_babe_persisted": true,
+      "duplicates_found": false,
+      "notes_used_for_content": false,
+      "timestamp": "2026-05-01T14:35:00Z",
+      "content_pages": [
+        {
+          "title": "Why a piggy bank is no longer enough",
+          "platform": "X",
+          "scheduled_date": "2026-05-11",
+          "content_type": "thread",
+          "status": "Scheduled",
+          "version": "v1",
+          "week": "2026-W20",
+          "thread_id": "TH-2026-05-11-1",
+          "body_verified": true,
+          "notes_empty": true,
+          "properties_verified": true,
+          "thread_blocks_count": 5,
+          "expected_tweets_count": 5
+        }
+      ],
+      "research_babe_page": {
+        "title": "Research Babe — PIG-101 — May 11–13, 2026",
+        "status": "Ready for Review",
+        "required_sections_present": true,
+        "readable_for_humans": true,
+        "duplicate_found": false,
+        "sections": [
+          "Research Summary",
+          "Key Signals",
+          "Inconsistencies",
+          "Uncertainty / Data Gaps",
+          "Opportunities",
+          "Recommended Content Angles",
+          "Source / Workflow Metadata"
+        ]
+      },
+      "verification": {
+        "content_pipeline_entries_verified": true,
+        "research_babe_page_verified": true,
+        "body_content_verified": true,
+        "required_properties_verified": true,
+        "thread_blocks_verified": true,
+        "duplicate_check_passed": true
+      }
+    }
+  ]
+}
