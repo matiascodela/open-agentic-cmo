@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/piggywallet/open-agentic-cmo/schemas/audit.schema.json",
+  "title": "Open Agentic CMO Audit Artifact",
+  "description": "Canonical schema for Babe's structured research audit artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "issue",
+    "subtask_issue",
+    "entity",
+    "timestamp",
+    "sections"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "audit",
+      "description": "Artifact type. Must always be audit."
+    },
+    "issue": {
+      "type": "string",
+      "description": "Parent workflow issue ID.",
+      "minLength": 1,
+      "examples": [
+        "PIG-101"
+      ]
+    },
+    "subtask_issue": {
+      "type": "string",
+      "description": "Babe subtask issue ID.",
+      "minLength": 1,
+      "examples": [
+        "PIG-102"
+      ]
+    },
+    "entity": {
+      "type": "string",
+      "description": "Entity or brand being researched.",
+      "minLength": 1,
+      "examples": [
+        "Piggy Wallet"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "ISO 8601 timestamp for when the audit artifact was produced.",
+      "format": "date-time",
+      "examples": [
+        "2026-05-01T14:00:00Z"
+      ]
+    },
+    "sections": {
+      "type": "object",
+      "description": "Structured audit sections produced by Babe.",
+      "additionalProperties": false,
+      "required": [
+        "summary",
+        "key_signals",
+        "inconsistencies",
+        "uncertainty",
+        "opportunities",
+        "recommended_content_angles"
+      ],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Clear, concise overview of the current research state.",
+          "minLength": 1
+        },
+        "key_signals": {
+          "type": "array",
+          "description": "Meaningful observations across researched channels.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "signal",
+              "source",
+              "interpretation"
+            ],
+            "properties": {
+              "signal": {
+                "type": "string",
+                "description": "Observed signal.",
+                "minLength": 1
+              },
+              "source": {
+                "type": "string",
+                "description": "Where the signal came from.",
+                "minLength": 1
+              },
+              "interpretation": {
+                "type": "string",
+                "description": "What the signal means for the workflow.",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "inconsistencies": {
+          "type": "array",
+          "description": "Conflicting, surprising, or potentially risky signals.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "signal",
+              "description",
+              "why_it_matters"
+            ],
+            "properties": {
+              "signal": {
+                "type": "string",
+                "description": "The inconsistent or conflicting signal.",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of the inconsistency.",
+                "minLength": 1
+              },
+              "why_it_matters": {
+                "type": "string",
+                "description": "Why this inconsistency matters for strategy or content.",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "description": "Data gaps, assumptions, or uncertainty that should be made explicit.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "gap",
+              "impact"
+            ],
+            "properties": {
+              "gap": {
+                "type": "string",
+                "description": "Missing, incomplete, or uncertain information.",
+                "minLength": 1
+              },
+              "impact": {
+                "type": "string",
+                "description": "How the gap affects strategy, content, or confidence.",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "opportunities": {
+          "type": "array",
+          "description": "Actionable opportunities derived from the audit.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "opportunity",
+              "reasoning"
+            ],
+            "properties": {
+              "opportunity": {
+                "type": "string",
+                "description": "Actionable opportunity.",
+                "minLength": 1
+              },
+              "reasoning": {
+                "type": "string",
+                "description": "Why this opportunity follows from the research.",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "recommended_content_angles": {
+          "type": "array",
+          "description": "Concrete content directions for Porky to use during strategy synthesis. These are not final content drafts.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "angle",
+              "reasoning"
+            ],
+            "properties": {
+              "angle": {
+                "type": "string",
+                "description": "Recommended content angle.",
+                "minLength": 1
+              },
+              "reasoning": {
+                "type": "string",
+                "description": "Why this angle is recommended.",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "type": "audit",
+      "issue": "PIG-101",
+      "subtask_issue": "PIG-102",
+      "entity": "Piggy Wallet",
+      "timestamp": "2026-05-01T14:00:00Z",
+      "sections": {
+        "summary": "Based on available data, Piggy Wallet is positioned as a fintech and edtech product for families in emerging markets.",
+        "key_signals": [
+          {
+            "signal": "Families in emerging markets face inflation pressure that can make saving feel unreliable.",
+            "source": "Brand positioning and product context.",
+            "interpretation": "Content should explain why saving behavior needs both education and protection."
+          }
+        ],
+        "inconsistencies": [
+          {
+            "signal": "Piggy Wallet uses Web3 infrastructure but aims for a Web2-like user experience.",
+            "description": "There is a potential messaging tension between the underlying technology and the desired simplicity for users.",
+            "why_it_matters": "Content should avoid making users feel they need to understand crypto in order to trust or use the product."
+          }
+        ],
+        "uncertainty": [
+          {
+            "gap": "Current live engagement data is not included in this artifact.",
+            "impact": "Content angles should be treated as strategic hypotheses until validated with platform performance data."
+          }
+        ],
+        "opportunities": [
+          {
+            "opportunity": "Create educational content explaining why money habits matter early.",
+            "reasoning": "This aligns with Piggy Wallet’s edtech mission and gives parents a non-technical reason to care."
+          }
+        ],
+        "recommended_content_angles": [
+          {
+            "angle": "Saving is a habit, but protection is a system.",
+            "reasoning": "Connects financial education with inflation-aware product positioning."
+          }
+        ]
+      }
+    }
+  ]
+}
