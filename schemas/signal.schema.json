@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/piggywallet/open-agentic-cmo/schemas/signal.schema.json",
+  "title": "Open Agentic CMO Signal",
+  "description": "Canonical schema for workflow transition signals in Open Agentic CMO.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "producer",
+    "issue",
+    "status",
+    "artifact",
+    "timestamp"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "The signal type used to mark workflow state transitions.",
+      "enum": [
+        "AUDIT_READY",
+        "SYNTHESIS_READY",
+        "CONTENT_SET_READY",
+        "NOTION_SYNC_COMPLETE",
+        "DELIVERY_COMPLETE",
+        "BLOCKED",
+        "RETRY_REQUIRED",
+        "TIMEOUT_DETECTED",
+        "RECOVERY_IN_PROGRESS",
+        "RECOVERY_COMPLETE"
+      ]
+    },
+    "producer": {
+      "type": "string",
+      "description": "The agent that produced the signal.",
+      "enum": [
+        "Porky",
+        "Babe",
+        "Hamm",
+        "Pumba"
+      ]
+    },
+    "issue": {
+      "type": "string",
+      "description": "The parent workflow issue ID.",
+      "minLength": 1,
+      "examples": [
+        "PIG-101"
+      ]
+    },
+    "subtask_issue": {
+      "type": "string",
+      "description": "The subtask issue ID that produced the signal, when available.",
+      "minLength": 1,
+      "examples": [
+        "PIG-103"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "description": "The completion or failure state represented by the signal.",
+      "enum": [
+        "COMPLETE",
+        "FAILED"
+      ]
+    },
+    "artifact": {
+      "type": "string",
+      "description": "The artifact or workflow area associated with the signal.",
+      "enum": [
+        "audit",
+        "strategy",
+        "content_set",
+        "notion_content_pipeline",
+        "telegram_delivery",
+        "workflow",
+        "content_generation",
+        "persistence_or_delivery"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "ISO 8601 timestamp for when the signal was emitted.",
+      "format": "date-time",
+      "examples": [
+        "2026-05-01T14:20:00Z"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "AUDIT_READY"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "producer": {
+            "const": "Babe"
+          },
+          "status": {
+            "const": "COMPLETE"
+          },
+          "artifact": {
+            "const": "audit"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "SYNTHESIS_READY"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "producer": {
+            "const": "Porky"
+          },
+          "status": {
+            "const": "COMPLETE"
+          },
+          "artifact": {
+            "const": "strategy"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "CONTENT_SET_READY"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "producer": {
+            "const": "Hamm"
+          },
+          "status": {
+            "const": "COMPLETE"
+          },
+          "artifact": {
+            "const": "content_set"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "NOTION_SYNC_COMPLETE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "producer": {
+            "const": "Pumba"
+          },
+          "status": {
+            "const": "COMPLETE"
+          },
+          "artifact": {
+            "const": "notion_content_pipeline"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "DELIVERY_COMPLETE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "producer": {
+            "const": "Pumba"
+          },
+          "status": {
+            "const": "COMPLETE"
+          },
+          "artifact": {
+            "const": "telegram_delivery"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "BLOCKED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "const": "FAILED"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "enum": [
+              "TIMEOUT_DETECTED",
+              "RECOVERY_IN_PROGRESS",
+              "RECOVERY_COMPLETE",
+              "RETRY_REQUIRED"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "producer": {
+            "const": "Porky"
+          },
+          "artifact": {
+            "const": "workflow"
+          }
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "type": "CONTENT_SET_READY",
+      "producer": "Hamm",
+      "issue": "PIG-101",
+      "subtask_issue": "PIG-103",
+      "status": "COMPLETE",
+      "artifact": "content_set",
+      "timestamp": "2026-05-01T14:20:00Z"
+    },
+    {
+      "type": "BLOCKED",
+      "producer": "Pumba",
+      "issue": "PIG-101",
+      "subtask_issue": "PIG-104",
+      "status": "FAILED",
+      "artifact": "persistence_or_delivery",
+      "timestamp": "2026-05-01T14:30:00Z"
+    }
+  ]
+}
