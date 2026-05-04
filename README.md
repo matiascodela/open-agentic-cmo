@@ -8,6 +8,10 @@ Originally built for [Piggy Wallet](https://www.piggywallet.app/) — a fintech 
 
 > **Note:** This repo provides agent contracts, schemas, and setup docs — not a standalone runtime. The workflow runs inside Paperclip.
 
+<p align="center">
+  <img src="./assets/open-agentic-cmo-architecture.svg" alt="Open Agentic CMO architecture diagram — Porky orchestrates Babe (Research), himself (Strategy), Hamm (Content), and Pumba (Notion + Delivery), with validation gates and structured artifacts at every step" width="100%">
+</p>
+
 ---
 
 ## Why this exists
