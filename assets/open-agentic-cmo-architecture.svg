@@ -1,0 +1,376 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Open Agentic CMO — Deterministic Multi-Agent Workflow</title>
+  <desc id="desc">A 5-phase deterministic multi-agent content workflow. Porky orchestrates from the start, delegating to Babe for Research, owning Strategy himself, then handing off to Hamm for Content and Pumba for Notion persistence and Delivery. Each phase produces a structured artifact and a signal. Core principles are signals, artifacts, validation gates, and idempotency.</desc>
+
+  <defs>
+    <linearGradient id="grad-pink" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB7185"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+    <linearGradient id="grad-coral" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB923C"/>
+      <stop offset="100%" stop-color="#F97316"/>
+    </linearGradient>
+    <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C084FC"/>
+      <stop offset="100%" stop-color="#A855F7"/>
+    </linearGradient>
+    <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="grad-teal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2DD4BF"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+    <linearGradient id="grad-title" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+    <linearGradient id="fill-pink-soft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF1F2"/>
+      <stop offset="100%" stop-color="#FFE4E6"/>
+    </linearGradient>
+    <linearGradient id="fill-coral-soft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF7ED"/>
+      <stop offset="100%" stop-color="#FFEDD5"/>
+    </linearGradient>
+    <linearGradient id="fill-purple-soft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FAF5FF"/>
+      <stop offset="100%" stop-color="#F3E8FF"/>
+    </linearGradient>
+    <linearGradient id="fill-blue-soft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#EFF6FF"/>
+      <stop offset="100%" stop-color="#DBEAFE"/>
+    </linearGradient>
+    <linearGradient id="fill-teal-soft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F0FDFA"/>
+      <stop offset="100%" stop-color="#CCFBF1"/>
+    </linearGradient>
+    <radialGradient id="blob-pink" cx="0%" cy="0%" r="100%">
+      <stop offset="0%" stop-color="#FCE7F3" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#FCE7F3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob-blue" cx="100%" cy="0%" r="100%">
+      <stop offset="0%" stop-color="#DBEAFE" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#DBEAFE" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F1830" flood-opacity="0.06"/>
+    </filter>
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F1830" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow-grey" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94A3B8"/>
+    </marker>
+    <marker id="arrow-pink" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#EC4899"/>
+    </marker>
+    <marker id="arrow-coral" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#F97316"/>
+    </marker>
+    <marker id="arrow-purple" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#A855F7"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3B82F6"/>
+    </marker>
+    <marker id="arrow-teal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#14B8A6"/>
+    </marker>
+  </defs>
+
+  <style>
+    .display { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-weight: 800; }
+    .heading { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-weight: 700; }
+    .body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-weight: 600; }
+    .light { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-weight: 400; }
+    .mono { font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace; font-weight: 600; }
+  </style>
+
+  <rect width="1600" height="900" fill="#FAFAFB"/>
+
+  <circle cx="0" cy="0" r="380" fill="url(#blob-pink)"/>
+  <circle cx="1600" cy="0" r="280" fill="url(#blob-blue)"/>
+  <circle cx="1530" cy="850" r="100" fill="#FCE7F3" opacity="0.5"/>
+  <circle cx="60" cy="850" r="80" fill="#DBEAFE" opacity="0.4"/>
+
+  <g fill="#FBCFE8" opacity="0.7">
+    <circle cx="1480" cy="50" r="4"/>
+    <circle cx="1505" cy="50" r="4"/>
+    <circle cx="1530" cy="50" r="4"/>
+    <circle cx="1555" cy="50" r="4"/>
+    <circle cx="1480" cy="75" r="4"/>
+    <circle cx="1505" cy="75" r="4"/>
+    <circle cx="1530" cy="75" r="4"/>
+    <circle cx="1480" cy="100" r="4"/>
+    <circle cx="1505" cy="100" r="4"/>
+  </g>
+
+  <g transform="translate(408, 38)">
+    <circle cx="32" cy="32" r="32" fill="url(#grad-pink)"/>
+    <circle cx="32" cy="32" r="26" fill="#FFFFFF" opacity="0.2"/>
+    <ellipse cx="32" cy="36" rx="14" ry="11" fill="#FFFFFF" opacity="0.95"/>
+    <circle cx="27" cy="34" r="2" fill="#EC4899"/>
+    <circle cx="37" cy="34" r="2" fill="#EC4899"/>
+    <ellipse cx="32" cy="40" rx="5" ry="3" fill="#FBCFE8"/>
+    <path d="M 62 8 L 64 14 L 70 16 L 64 18 L 62 24 L 60 18 L 54 16 L 60 14 Z" fill="#FBBF24"/>
+  </g>
+
+  <text x="490" y="92" class="display" font-size="64" fill="#0F1830">Open Agentic</text>
+  <text x="990" y="92" class="display" font-size="64" fill="url(#grad-title)">CMO</text>
+
+  <text x="800" y="138" text-anchor="middle" class="light" font-size="20" fill="#475569">Deterministic multi-agent workflow for research, strategy, content, Notion, and delivery</text>
+
+  <g transform="translate(60, 200)">
+    <path d="M 0 0 L 0 24 L 22 12 Z" fill="#EC4899"/>
+    <text x="32" y="18" class="heading" font-size="18" fill="#EC4899">START</text>
+    <text x="0" y="44" class="light" font-size="13" fill="#64748B">Workflow starts here</text>
+  </g>
+
+  <path d="M 80 270 L 80 310 Q 80 330 100 330 L 320 330" stroke="#FB7185" stroke-width="2" fill="none" stroke-dasharray="0"/>
+  <circle cx="80" cy="270" r="5" fill="#EC4899"/>
+  <polygon points="318,326 326,330 318,334" fill="#FB7185"/>
+
+  <g transform="translate(40, 290)">
+    <rect x="0" y="0" width="240" height="280" rx="20" fill="#FFFFFF" stroke="#FB7185" stroke-width="2.5" filter="url(#card-shadow)"/>
+    <circle cx="120" cy="80" r="50" fill="url(#grad-pink)"/>
+    <text x="120" y="98" text-anchor="middle" class="display" font-size="48" fill="#FFFFFF">P</text>
+    <path d="M 162 38 L 164 44 L 170 46 L 164 48 L 162 54 L 160 48 L 154 46 L 160 44 Z" fill="#FBBF24"/>
+    <text x="120" y="170" text-anchor="middle" class="display" font-size="32" fill="#0F1830">Porky</text>
+    <text x="120" y="195" text-anchor="middle" class="heading" font-size="13" fill="#EC4899" letter-spacing="2">ORCHESTRATOR</text>
+    <text x="120" y="226" text-anchor="middle" class="light" font-size="13" fill="#475569">Starts the workflow,</text>
+    <text x="120" y="244" text-anchor="middle" class="light" font-size="13" fill="#475569">delegates, validates,</text>
+    <text x="120" y="262" text-anchor="middle" class="light" font-size="13" fill="#475569">and ensures completion</text>
+  </g>
+
+  <g transform="translate(40, 600)">
+    <rect x="0" y="0" width="240" height="80" rx="14" fill="#FFFFFF" stroke="#FECACA" stroke-width="1.5" filter="url(#soft-shadow)"/>
+    <g transform="translate(20, 16)" stroke="#EC4899" stroke-width="2" fill="none">
+      <rect x="0" y="0" width="14" height="10" rx="2"/>
+      <rect x="-6" y="22" width="10" height="8" rx="1.5"/>
+      <rect x="10" y="22" width="10" height="8" rx="1.5"/>
+      <path d="M 7 10 L 7 18 M -1 18 L 15 18 M -1 18 L -1 22 M 15 18 L 15 22"/>
+    </g>
+    <text x="56" y="28" class="heading" font-size="13" fill="#EC4899" letter-spacing="2">ORCHESTRATION</text>
+    <text x="56" y="56" class="light" font-size="13" fill="#475569">Delegates · Validates · Ensures</text>
+  </g>
+
+  <g transform="translate(320, 280)" filter="url(#soft-shadow)">
+    <rect width="220" height="100" rx="16" fill="#FFFFFF" stroke="#FECDD3" stroke-width="1.5"/>
+    <g transform="translate(20, 30)">
+      <circle cx="20" cy="20" r="20" fill="url(#grad-pink)"/>
+      <circle cx="17" cy="17" r="7" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
+      <line x1="22" y1="22" x2="28" y2="28" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <text x="80" y="58" class="heading" font-size="20" fill="#0F1830">1. Research</text>
+  </g>
+
+  <line x1="544" y1="330" x2="576" y2="330" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-grey)"/>
+
+  <g transform="translate(580, 280)" filter="url(#soft-shadow)">
+    <rect width="220" height="100" rx="16" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5"/>
+    <g transform="translate(20, 30)">
+      <circle cx="20" cy="20" r="20" fill="url(#grad-coral)"/>
+      <circle cx="20" cy="20" r="11" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+      <circle cx="20" cy="20" r="5" fill="#FFFFFF"/>
+    </g>
+    <text x="80" y="58" class="heading" font-size="20" fill="#0F1830">2. Strategy</text>
+  </g>
+
+  <line x1="804" y1="330" x2="836" y2="330" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-grey)"/>
+
+  <g transform="translate(840, 280)" filter="url(#soft-shadow)">
+    <rect width="220" height="100" rx="16" fill="#FFFFFF" stroke="#E9D5FF" stroke-width="1.5"/>
+    <g transform="translate(20, 30)">
+      <circle cx="20" cy="20" r="20" fill="url(#grad-purple)"/>
+      <rect x="13" y="11" width="12" height="16" rx="1" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+      <line x1="16" y1="16" x2="22" y2="16" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="16" y1="20" x2="22" y2="20" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="16" y1="24" x2="20" y2="24" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+    <text x="80" y="58" class="heading" font-size="20" fill="#0F1830">3. Content</text>
+  </g>
+
+  <line x1="1064" y1="330" x2="1096" y2="330" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-grey)"/>
+
+  <g transform="translate(1100, 280)" filter="url(#soft-shadow)">
+    <rect width="220" height="100" rx="16" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1.5"/>
+    <g transform="translate(20, 30)">
+      <circle cx="20" cy="20" r="20" fill="url(#grad-blue)"/>
+      <text x="20" y="28" text-anchor="middle" class="display" font-size="22" fill="#FFFFFF">N</text>
+    </g>
+    <text x="80" y="58" class="heading" font-size="20" fill="#0F1830">4. Notion</text>
+  </g>
+
+  <line x1="1324" y1="330" x2="1356" y2="330" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-grey)"/>
+
+  <g transform="translate(1360, 280)" filter="url(#soft-shadow)">
+    <rect width="220" height="100" rx="16" fill="#FFFFFF" stroke="#99F6E4" stroke-width="1.5"/>
+    <g transform="translate(20, 30)">
+      <circle cx="20" cy="20" r="20" fill="url(#grad-teal)"/>
+      <path d="M 12 22 L 30 14 L 23 28 L 21 22 L 12 22 Z" fill="#FFFFFF"/>
+    </g>
+    <text x="80" y="58" class="heading" font-size="20" fill="#0F1830">5. Delivery</text>
+  </g>
+
+  <line x1="430" y1="380" x2="430" y2="410" stroke="#FB7185" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <line x1="690" y1="380" x2="690" y2="410" stroke="#FB923C" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <line x1="950" y1="380" x2="950" y2="410" stroke="#C084FC" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <line x1="1210" y1="380" x2="1210" y2="410" stroke="#60A5FA" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <line x1="1470" y1="380" x2="1470" y2="410" stroke="#2DD4BF" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+  <g transform="translate(320, 410)">
+    <rect width="220" height="80" rx="12" fill="url(#fill-pink-soft)" stroke="#FECDD3" stroke-width="1"/>
+    <g transform="translate(16, 24)">
+      <rect x="0" y="0" width="32" height="32" rx="6" fill="#FFFFFF"/>
+      <line x1="8" y1="22" x2="8" y2="14" stroke="#EC4899" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="14" y1="22" x2="14" y2="9" stroke="#EC4899" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="20" y1="22" x2="20" y2="17" stroke="#EC4899" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="26" y1="22" x2="26" y2="6" stroke="#EC4899" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <text x="64" y="34" class="body" font-size="14" fill="#0F1830">audit</text>
+    <text x="64" y="56" class="mono" font-size="12" fill="#EC4899">AUDIT_READY</text>
+  </g>
+
+  <g transform="translate(580, 410)">
+    <rect width="220" height="80" rx="12" fill="url(#fill-coral-soft)" stroke="#FED7AA" stroke-width="1"/>
+    <g transform="translate(16, 24)">
+      <rect x="0" y="0" width="32" height="32" rx="6" fill="#FFFFFF"/>
+      <circle cx="16" cy="16" r="9" fill="none" stroke="#F97316" stroke-width="2.5"/>
+      <path d="M 16 16 L 16 7 A 9 9 0 0 1 24 19 Z" fill="#F97316"/>
+    </g>
+    <text x="64" y="34" class="body" font-size="14" fill="#0F1830">strategy</text>
+    <text x="64" y="56" class="mono" font-size="12" fill="#F97316">SYNTHESIS_READY</text>
+  </g>
+
+  <g transform="translate(840, 410)">
+    <rect width="220" height="80" rx="12" fill="url(#fill-purple-soft)" stroke="#E9D5FF" stroke-width="1"/>
+    <g transform="translate(16, 24)">
+      <rect x="0" y="0" width="32" height="32" rx="6" fill="#FFFFFF"/>
+      <rect x="8" y="6" width="16" height="20" rx="1.5" fill="none" stroke="#A855F7" stroke-width="2"/>
+      <line x1="11" y1="12" x2="21" y2="12" stroke="#A855F7" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="11" y1="16" x2="21" y2="16" stroke="#A855F7" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="11" y1="20" x2="18" y2="20" stroke="#A855F7" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+    <text x="64" y="34" class="body" font-size="14" fill="#0F1830">content_set</text>
+    <text x="64" y="56" class="mono" font-size="12" fill="#A855F7">CONTENT_SET_READY</text>
+  </g>
+
+  <g transform="translate(1100, 410)">
+    <rect width="220" height="80" rx="12" fill="url(#fill-blue-soft)" stroke="#BFDBFE" stroke-width="1"/>
+    <g transform="translate(16, 24)">
+      <rect x="0" y="0" width="32" height="32" rx="6" fill="#FFFFFF"/>
+      <ellipse cx="16" cy="9" rx="9" ry="3" fill="none" stroke="#3B82F6" stroke-width="2"/>
+      <path d="M 7 9 L 7 23 A 9 3 0 0 0 25 23 L 25 9" fill="none" stroke="#3B82F6" stroke-width="2"/>
+      <ellipse cx="16" cy="16" rx="9" ry="3" fill="none" stroke="#3B82F6" stroke-width="1.5"/>
+    </g>
+    <text x="64" y="34" class="body" font-size="13" fill="#0F1830">notion_content_pipeline</text>
+    <text x="64" y="56" class="mono" font-size="11" fill="#3B82F6">NOTION_SYNC_COMPLETE</text>
+  </g>
+
+  <g transform="translate(1360, 410)">
+    <rect width="220" height="80" rx="12" fill="url(#fill-teal-soft)" stroke="#99F6E4" stroke-width="1"/>
+    <g transform="translate(16, 24)">
+      <rect x="0" y="0" width="32" height="32" rx="6" fill="#FFFFFF"/>
+      <path d="M 7 17 L 26 9 L 20 24 L 17 18 L 7 17 Z" fill="none" stroke="#14B8A6" stroke-width="2" stroke-linejoin="round"/>
+    </g>
+    <text x="64" y="34" class="body" font-size="13" fill="#0F1830">telegram_delivery</text>
+    <text x="64" y="56" class="mono" font-size="11" fill="#14B8A6">DELIVERY_COMPLETE</text>
+  </g>
+
+  <line x1="430" y1="490" x2="430" y2="610" stroke="#EC4899" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrow-pink)"/>
+  <line x1="690" y1="490" x2="690" y2="610" stroke="#F97316" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrow-coral)"/>
+  <line x1="950" y1="490" x2="950" y2="610" stroke="#A855F7" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrow-purple)"/>
+  <line x1="1210" y1="490" x2="1210" y2="610" stroke="#3B82F6" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrow-blue)"/>
+  <line x1="1470" y1="490" x2="1470" y2="610" stroke="#14B8A6" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrow-teal)"/>
+
+  <g transform="translate(320, 620)" filter="url(#card-shadow)">
+    <rect width="220" height="200" rx="18" fill="#FFFFFF" stroke="#FECDD3" stroke-width="1.5"/>
+    <rect x="20" y="22" width="180" height="50" rx="10" fill="url(#grad-pink)"/>
+    <text x="110" y="55" text-anchor="middle" class="display" font-size="26" fill="#FFFFFF">Babe</text>
+    <text x="110" y="100" text-anchor="middle" class="heading" font-size="11" fill="#EC4899" letter-spacing="2">RESEARCH AGENT</text>
+    <text x="110" y="130" text-anchor="middle" class="light" font-size="13" fill="#475569">Produces audits,</text>
+    <text x="110" y="148" text-anchor="middle" class="light" font-size="13" fill="#475569">research, and</text>
+    <text x="110" y="166" text-anchor="middle" class="light" font-size="13" fill="#475569">insights</text>
+  </g>
+
+  <g transform="translate(580, 620)" filter="url(#card-shadow)">
+    <rect width="220" height="200" rx="18" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5"/>
+    <rect x="20" y="22" width="180" height="50" rx="10" fill="url(#grad-coral)"/>
+    <text x="110" y="55" text-anchor="middle" class="display" font-size="26" fill="#FFFFFF">Porky</text>
+    <text x="110" y="100" text-anchor="middle" class="heading" font-size="11" fill="#F97316" letter-spacing="2">STRATEGY OWNER</text>
+    <text x="110" y="130" text-anchor="middle" class="light" font-size="13" fill="#475569">Synthesizes findings,</text>
+    <text x="110" y="148" text-anchor="middle" class="light" font-size="13" fill="#475569">defines strategy, and</text>
+    <text x="110" y="166" text-anchor="middle" class="light" font-size="13" fill="#475569">sets direction</text>
+  </g>
+
+  <g transform="translate(840, 620)" filter="url(#card-shadow)">
+    <rect width="220" height="200" rx="18" fill="#FFFFFF" stroke="#E9D5FF" stroke-width="1.5"/>
+    <rect x="20" y="22" width="180" height="50" rx="10" fill="url(#grad-purple)"/>
+    <text x="110" y="55" text-anchor="middle" class="display" font-size="26" fill="#FFFFFF">Hamm</text>
+    <text x="110" y="100" text-anchor="middle" class="heading" font-size="11" fill="#A855F7" letter-spacing="2">CONTENT AGENT</text>
+    <text x="110" y="130" text-anchor="middle" class="light" font-size="13" fill="#475569">Creates publication-</text>
+    <text x="110" y="148" text-anchor="middle" class="light" font-size="13" fill="#475569">ready posts and threads</text>
+    <text x="110" y="166" text-anchor="middle" class="light" font-size="13" fill="#475569">for X and LinkedIn</text>
+  </g>
+
+  <g transform="translate(1100, 620)" filter="url(#card-shadow)">
+    <rect width="220" height="200" rx="18" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1.5"/>
+    <rect x="20" y="22" width="180" height="50" rx="10" fill="url(#grad-blue)"/>
+    <text x="110" y="55" text-anchor="middle" class="display" font-size="26" fill="#FFFFFF">Pumba</text>
+    <text x="110" y="100" text-anchor="middle" class="heading" font-size="11" fill="#3B82F6" letter-spacing="2">PERSISTENCE AGENT</text>
+    <text x="110" y="130" text-anchor="middle" class="light" font-size="13" fill="#475569">Persists content and</text>
+    <text x="110" y="148" text-anchor="middle" class="light" font-size="13" fill="#475569">research to Notion</text>
+    <text x="110" y="166" text-anchor="middle" class="light" font-size="13" fill="#475569">with no duplicates</text>
+  </g>
+
+  <g transform="translate(1360, 620)" filter="url(#card-shadow)">
+    <rect width="220" height="200" rx="18" fill="#FFFFFF" stroke="#99F6E4" stroke-width="1.5"/>
+    <rect x="20" y="22" width="180" height="50" rx="10" fill="url(#grad-teal)"/>
+    <text x="110" y="55" text-anchor="middle" class="display" font-size="26" fill="#FFFFFF">Pumba</text>
+    <text x="110" y="100" text-anchor="middle" class="heading" font-size="11" fill="#14B8A6" letter-spacing="2">DELIVERY AGENT</text>
+    <text x="110" y="130" text-anchor="middle" class="light" font-size="13" fill="#475569">Sends Telegram</text>
+    <text x="110" y="148" text-anchor="middle" class="light" font-size="13" fill="#475569">summary with full</text>
+    <text x="110" y="166" text-anchor="middle" class="light" font-size="13" fill="#475569">audit trail</text>
+  </g>
+
+  <g transform="translate(60, 850)" filter="url(#soft-shadow)">
+    <rect width="1480" height="36" rx="18" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+    <g transform="translate(20, 8)">
+      <rect x="0" y="0" width="22" height="22" rx="5" fill="url(#grad-pink)"/>
+      <path d="M 11 5 L 17 8 L 17 13 Q 17 17 11 19 Q 5 17 5 13 L 5 8 Z" fill="#FFFFFF" opacity="0.95"/>
+      <path d="M 11 8 L 11.8 10.4 L 14.4 10.4 L 12.3 12 L 13.1 14.4 L 11 12.9 L 8.9 14.4 L 9.7 12 L 7.6 10.4 L 10.2 10.4 Z" fill="#EC4899"/>
+    </g>
+    <text x="52" y="24" class="heading" font-size="15" fill="#0F1830">Core principles</text>
+    <line x1="200" y1="8" x2="200" y2="28" stroke="#E5E7EB" stroke-width="1"/>
+    <g transform="translate(220, 8)">
+      <rect width="160" height="22" rx="11" fill="url(#fill-pink-soft)"/>
+      <path d="M 14 11 L 18 11 L 22 5 L 26 17 L 30 11 L 34 11" stroke="#EC4899" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="50" y="16" class="body" font-size="12" fill="#0F1830">Signals</text>
+    </g>
+    <g transform="translate(400, 8)">
+      <rect width="180" height="22" rx="11" fill="url(#fill-coral-soft)"/>
+      <g transform="translate(14, 5)">
+        <rect x="0" y="0" width="14" height="3" rx="0.5" fill="#F97316"/>
+        <rect x="0" y="5" width="14" height="3" rx="0.5" fill="#F97316"/>
+        <rect x="0" y="10" width="14" height="3" rx="0.5" fill="#F97316"/>
+      </g>
+      <text x="50" y="16" class="body" font-size="12" fill="#0F1830">Artifacts</text>
+    </g>
+    <g transform="translate(600, 8)">
+      <rect width="220" height="22" rx="11" fill="url(#fill-purple-soft)"/>
+      <path d="M 22 6 L 28 8 L 28 14 Q 28 18 22 20 Q 16 18 16 14 L 16 8 Z" fill="#A855F7"/>
+      <path d="M 19 13 L 21 15 L 25 11" stroke="#FFFFFF" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="50" y="16" class="body" font-size="12" fill="#0F1830">Validation gates</text>
+    </g>
+    <g transform="translate(840, 8)">
+      <rect width="200" height="22" rx="11" fill="url(#fill-teal-soft)"/>
+      <path d="M 16 11 A 6 6 0 1 1 22 17" stroke="#14B8A6" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <polyline points="20,17 22,17 22,15" stroke="#14B8A6" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="50" y="16" class="body" font-size="12" fill="#0F1830">Idempotency</text>
+    </g>
+    <text x="1460" y="24" text-anchor="end" class="light" font-size="11" fill="#94A3B8" font-style="italic">No duplicate work · Human-reviewable execution</text>
+  </g>
+</svg>
