@@ -4,7 +4,7 @@ End-to-end testing is how Open Agentic CMO validates that the full multi-agent w
 
 The goal of E2E testing is not only to check that agents produce outputs.
 
-The goal is to verify that the entire system behaves deterministically, respects contracts, persists clean data, and stops safely when something is invalid.
+The goal is to verify that the entire system behaves deterministically, respects contracts, expands vague operator prompts into complete subtasks, persists clean data, and stops safely when something is invalid.
 
 ---
 
@@ -12,18 +12,38 @@ The goal is to verify that the entire system behaves deterministically, respects
 
 The full workflow is:
 
-**Research → Strategy → Content → Notion → Delivery**
+```text
+Research → Strategy → Content → Notion → Delivery
+```
+
+The canonical agent execution order is:
+
+```text
+Porky → Babe → Porky → Hamm → Porky → Pumba → Porky
+```
 
 A successful E2E test validates that:
 
-1. Babe produces a valid `audit` artifact.
-2. Porky produces a valid `strategy` artifact.
-3. Hamm produces a valid `content_set` artifact.
-4. Pumba persists content into the Notion Content Pipeline.
-5. Pumba persists Babe research into `Research Babe`.
-6. Pumba sends a Telegram summary.
-7. Porky validates every phase.
-8. The workflow stops only after `DELIVERY_COMPLETE`.
+1. Porky creates only the Babe subtask first.
+2. Porky creates a complete Babe subtask description, not a title-only task.
+3. Babe produces a valid `audit` artifact.
+4. Babe posts the `audit` artifact and `AUDIT_READY` signal on the parent issue.
+5. Porky validates Babe’s audit.
+6. Porky produces a valid `strategy` artifact.
+7. Porky emits `SYNTHESIS_READY` on the parent issue.
+8. Porky creates Hamm only after audit and strategy validation pass.
+9. Porky creates a complete Hamm subtask description.
+10. Hamm produces a valid `content_set` artifact.
+11. Hamm posts the `content_set` artifact and `CONTENT_SET_READY` signal on the parent issue.
+12. Porky validates Hamm’s content.
+13. Porky creates Pumba only after content validation passes.
+14. Porky creates a complete Pumba subtask description.
+15. Pumba persists content into the Notion Content Pipeline.
+16. Pumba persists Babe research into `Research Babe`.
+17. Pumba sends a Telegram summary.
+18. Pumba posts final persistence and delivery artifacts on the parent issue.
+19. Porky validates every phase.
+20. The workflow stops only after `DELIVERY_COMPLETE`.
 
 ---
 
@@ -36,13 +56,20 @@ Common hidden failures include:
 - Completion signals emitted before artifacts exist
 - Agents posting summaries instead of structured artifacts
 - Downstream agents running too early
+- Porky creating all subtasks at workflow initialization
+- Porky creating title-only subtasks
+- Subtasks missing source context, strategy, artifact requirements, or validation criteria
+- Agents posting final artifacts only on subtasks
 - Content being persisted into `Notes`
 - Missing Notion properties such as `Version` or `Week`
 - Threads being merged into one unstructured block
 - Research context being lost
+- `Research Babe` page missing
 - Duplicate Notion pages
 - Duplicate Telegram summaries
 - Porky advancing despite validation failures
+- Babe spending the run on Paperclip reference discovery instead of completing the audit
+- Pumba waking early and producing noisy `BLOCKED` signals before it was explicitly delegated
 
 E2E testing catches these failures.
 
@@ -56,11 +83,15 @@ Do not start with a large campaign test.
 
 Recommended order:
 
-1. Controlled 3-day test
-2. Weekly 7-day test
+1. Controlled 3-day test with a vague operator prompt
+2. Weekly 7-day test with a normal production-style prompt
 3. Extended 11-day test
 4. Failure-case tests
 5. Regression tests after agent changes
+
+The key rule: the system should pass with a realistic, high-level parent issue.
+
+The parent issue should not need to spell out every internal artifact, signal, and phase rule. Porky must expand the vague prompt into rich phase-specific subtasks.
 
 ---
 
@@ -71,12 +102,25 @@ Use this test after changing:
 - Agent instructions
 - Signal contracts
 - Artifact contracts
+- Sequential delegation rules
+- Subtask creation rules
 - Notion persistence rules
 - Porky validation gates
+- Babe research execution rules
+- Pumba delivery rules
 
 ### Goal
 
 Validate the full artifact-based pipeline with minimal scope.
+
+This test should confirm that a simple operator prompt is enough for Porky to:
+
+- infer the workflow
+- delegate only the next valid phase
+- create complete subtask descriptions
+- validate artifacts
+- prevent premature downstream execution
+- persist final outputs correctly
 
 ### Date range
 
@@ -108,276 +152,105 @@ Piglet is excluded.
 Copy this into a new parent issue assigned to Porky:
 
 ```text
-TITLE: Controlled E2E Test — Artifact-Based Pipeline + Research Babe Notion Page
+TITLE: Controlled E2E Test — Piggy Wallet Content Workflow
 
 DESCRIPTION:
 
-Run a small controlled end-to-end validation of the Open Agentic CMO core content pipeline.
+Run a controlled Piggy Wallet content workflow for May 11–13, 2026.
 
-This test validates the artifact-based contracts and hard validation gates before running a larger weekly E2E test.
-
-Pipeline:
-
-Research → Strategy → Content → Notion → Delivery
-
-Agents involved:
-
-- Porky: orchestration, strategy synthesis, validation gates
-- Babe: research/audit artifact
-- Hamm: structured content_set artifact
-- Pumba: Notion persistence + Research Babe page + Telegram delivery
-
-Piglet is intentionally excluded from this test.
-
-OBJECTIVE
-
-Validate that the workflow can autonomously:
-
-1. Generate a structured Babe audit artifact
-2. Generate a structured Porky strategy artifact
-3. Generate a structured Hamm content_set artifact
-4. Persist content correctly into Notion Content Pipeline
-5. Persist Babe research into a Notion page titled Research Babe
-6. Send Telegram summary
-7. Emit and propagate all required signals
-8. Stop only after DELIVERY_COMPLETE
-
-DATE RANGE
-
-May 11, 2026 → May 13, 2026
-
-Total days: 3
-
-Expected output:
-
-- 3 total content items
-- Exactly 1 item per scheduled date
+Create 3 content items:
 - 1 X thread
 - 1 X post
 - 1 LinkedIn post
 
-CONTENT REQUIREMENTS
-
-Each content item must include:
-
-- title
-- platform
-- language
-- content_type
-- scheduled_date
-- vertical
-- version
-- week
-- tags_and_mentions
-
-For posts:
-
-- body
-
-For threads:
-
-- thread_id
-- tweets array
-- 4–7 tweets
-- logical progression
-- no duplicate tweets
-
-RESEARCH REQUIREMENTS
-
-Babe must publish a full audit artifact before AUDIT_READY.
-
-Required format:
-
-ARTIFACT:
-type: audit
-issue: <PARENT_ISSUE_ID>
-subtask_issue: <BABE_SUBTASK_ISSUE_ID>
-entity: Piggy Wallet
-timestamp:
-sections:
-
-Required sections:
-
-- summary
-- key_signals
-- inconsistencies
-- uncertainty
-- opportunities
-- recommended_content_angles
-
-STRATEGY REQUIREMENTS
-
-Porky must publish a full strategy artifact before SYNTHESIS_READY.
-
-Required format:
-
-ARTIFACT:
-type: strategy
-issue: <PARENT_ISSUE_ID>
-date_range:
-expected_items:
-messaging_pillars:
-content_angles:
-weekly_structure:
-brand_constraints:
-content_rules:
-
-CONTENT ARTIFACT REQUIREMENTS
-
-Hamm must publish a full content_set artifact before CONTENT_SET_READY.
-
-Required format:
-
-ARTIFACT:
-type: content_set
-issue: <PARENT_ISSUE_ID>
-subtask_issue: <HAMM_SUBTASK_ISSUE_ID>
-item_count: 3
-content_items:
-
-Do not emit CONTENT_SET_READY unless the full artifact is visible in the Hamm subtask.
-
-NOTION REQUIREMENTS
-
-Pumba must persist BOTH:
-
-1. Content Pipeline entries
-2. Research Babe page
-
-Content Pipeline:
-
-For each content item, set:
-
-- Title
-- Platform
-- Status = Scheduled
-- Scheduled Date
-- Vertical
-- Version
-- Week
-- Content Type
-
-Body rules:
-
-- Post content must be placed in page body
-- Thread tweets must be placed as ordered page body blocks
-- Content must NOT be placed in Notes
-
-Research Babe:
-
-Create or update a page titled:
-
-Research Babe — <PARENT_ISSUE_ID> — May 11–13, 2026
-
-The page body must include:
-
-- Research Summary
-- Key Signals
-- Inconsistencies
-- Uncertainty / Data Gaps
-- Opportunities
-- Recommended Content Angles
-- Source / Workflow Metadata
-
-VALIDATION GATES
-
-Porky must validate before advancing:
-
-1. AUDIT_READY is valid only if audit artifact exists and passes validation
-2. SYNTHESIS_READY is valid only if strategy artifact exists and passes validation
-3. CONTENT_SET_READY is valid only if content_set artifact exists and passes validation
-4. NOTION_SYNC_COMPLETE is valid only if:
-   - all 3 content items exist in Notion
-   - no duplicates exist
-   - Version is populated
-   - Week is populated
-   - Content Type is populated
-   - content is in body, not Notes
-   - Research Babe page exists
-5. DELIVERY_COMPLETE is valid only if Telegram summary was sent once
-
-EXPECTED SIGNALS
-
-SIGNAL:
-type: AUDIT_READY
-producer: Babe
-issue: <PARENT_ISSUE_ID>
-subtask_issue: <BABE_SUBTASK_ISSUE_ID>
-status: COMPLETE
-artifact: audit
-timestamp:
-
-SIGNAL:
-type: SYNTHESIS_READY
-producer: Porky
-issue: <PARENT_ISSUE_ID>
-status: COMPLETE
-artifact: strategy
-timestamp:
-
-SIGNAL:
-type: CONTENT_SET_READY
-producer: Hamm
-issue: <PARENT_ISSUE_ID>
-subtask_issue: <HAMM_SUBTASK_ISSUE_ID>
-status: COMPLETE
-artifact: content_set
-timestamp:
-
-SIGNAL:
-type: NOTION_SYNC_COMPLETE
-producer: Pumba
-issue: <PARENT_ISSUE_ID>
-subtask_issue: <PUMBA_SUBTASK_ISSUE_ID>
-status: COMPLETE
-artifact: notion_content_pipeline
-timestamp:
-
-SIGNAL:
-type: DELIVERY_COMPLETE
-producer: Pumba
-issue: <PARENT_ISSUE_ID>
-subtask_issue: <PUMBA_SUBTASK_ISSUE_ID>
-status: COMPLETE
-artifact: telegram_delivery
-timestamp:
-
-FAILURE CONDITIONS
-
-The test fails if:
-
-- any required artifact is missing
-- any signal is emitted before its artifact
-- Hamm emits only a summary instead of full content_items
-- Pumba persists content into Notes
-- Version is empty
-- Week is empty
-- Research Babe page is missing
-- duplicate Notion entries are created
-- Telegram summary is sent more than once
-- Porky advances despite validation errors
-
-FINAL OUTPUT REQUIRED FROM PORKY
-
-At completion, post a final summary including:
-
-- parent issue id
-- date range
-- total content items
-- number of posts
-- number of threads
-- platforms used
-- audit artifact validation result
-- strategy artifact validation result
-- content_set artifact validation result
-- Content Pipeline Notion validation result
-- Research Babe Notion validation result
-- Telegram delivery result
-- emitted signals
-- any issues found and resolved
-
-Do not close the workflow unless all validation gates pass.
+Save the content and the research context to Notion, then send the Telegram summary.
 ```
+
+This prompt is intentionally simple.
+
+The test passes only if Porky expands this vague prompt into complete phase-specific execution.
+
+---
+
+## Controlled 3-day expected behavior
+
+The expected workflow behavior is:
+
+1. Porky starts the parent workflow.
+2. Porky creates only the Babe research subtask.
+3. Babe subtask has a complete description.
+4. Hamm is not created yet.
+5. Pumba is not created yet.
+6. Babe publishes the full `audit` artifact on the parent issue.
+7. Babe emits `AUDIT_READY` on the parent issue.
+8. Porky validates the audit.
+9. Porky publishes the `strategy` artifact on the parent issue.
+10. Porky emits `SYNTHESIS_READY` on the parent issue.
+11. Porky creates the Hamm content subtask.
+12. Hamm subtask has a complete description including strategy context.
+13. Hamm publishes the full `content_set` artifact on the parent issue.
+14. Hamm emits `CONTENT_SET_READY` on the parent issue.
+15. Porky validates the content set.
+16. Porky creates the Pumba Notion + Delivery subtask.
+17. Pumba subtask has a complete description including audit and content_set context.
+18. Pumba persists content into Notion Content Pipeline.
+19. Pumba persists Babe research into Research Babe.
+20. Pumba publishes `notion_content_pipeline` artifact on the parent issue.
+21. Pumba emits `NOTION_SYNC_COMPLETE` on the parent issue.
+22. Pumba sends Telegram summary.
+23. Pumba publishes `telegram_delivery` artifact on the parent issue.
+24. Pumba emits `DELIVERY_COMPLETE` on the parent issue.
+25. Porky validates final state.
+26. Porky posts final summary.
+
+---
+
+## Controlled 3-day pass/fail criteria
+
+The controlled test passes only if:
+
+### Porky
+
+- Creates only Babe first
+- Does not create Hamm before Babe completes and strategy is valid
+- Does not create Pumba before Hamm content is valid
+- Produces a `strategy` artifact before `SYNTHESIS_READY`
+- Creates complete phase-specific subtask descriptions
+- Does not create title-only subtasks
+- Validates every artifact before advancing
+- Posts final summary only after final validation
+
+### Babe
+
+- Executes the assigned research task directly
+- Does not spend the run on broad Paperclip reference discovery
+- Produces `ARTIFACT: type: audit`
+- Includes all required audit sections
+- Includes `critical_flags`, even if empty
+- Posts artifact on the parent issue
+- Emits `AUDIT_READY` on the parent issue
+
+### Hamm
+
+- Starts only after Porky explicitly delegates content
+- Consumes Porky’s strategy artifact
+- Respects `excluded_claims` and `safe_framing` if present
+- Produces `ARTIFACT: type: content_set`
+- Produces exactly 3 content items
+- Posts artifact on the parent issue
+- Emits `CONTENT_SET_READY` on the parent issue
+
+### Pumba
+
+- Starts only after Porky explicitly delegates Notion + Delivery
+- Does not run early
+- Does not emit noisy `BLOCKED` before explicit delegation
+- Persists content into Notion Content Pipeline
+- Persists research into Research Babe
+- Does not store final content in `Notes`
+- Preserves thread tweets as ordered body blocks
+- Sends Telegram summary once
+- Posts final artifacts and signals on the parent issue
 
 ---
 
@@ -387,25 +260,95 @@ Use this after the controlled 3-day test passes.
 
 ### Goal
 
-Validate a normal weekly content workflow.
+Validate a normal weekly content workflow using a realistic high-level prompt.
 
 ### Expected output
 
-- 7 total content items
-- Exactly 1 item per scheduled date
-- At least 3 X threads
-- Mix of X and LinkedIn
+- 7 X posts or threads, one per day
+- 2 LinkedIn posts during the week
+- 9 total content items
 - Research Babe page
 - Telegram summary
 
 ### What it validates
 
-- Weekly distribution
-- Multiple threads
+- Normal weekly distribution
 - Multi-platform mix
 - Week field generation
 - Notion deduplication
 - Research traceability
+- Porky’s ability to expand a vague operator prompt
+- Rich subtask descriptions under a production-like request
+
+---
+
+## Weekly 7-day test issue
+
+Copy this into a new parent issue assigned to Porky:
+
+```text
+TITLE: Social Media Content Creation — Week #2 May
+
+DESCRIPTION:
+
+Generate content for the Piggy Wallet X and LinkedIn accounts for the week of May 11 to May 17, 2026.
+
+I want:
+
+- 1 post for X per day
+- 2 posts for LinkedIn during the week
+
+Take into account that last week the Piggy Wallet team attended Consensus Miami.
+
+Please research relevant speakers, side events, activities, and themes from Consensus Miami, and use that context to create useful content for Piggy Wallet’s audience.
+
+The content should stay aligned with Piggy Wallet’s mission:
+
+- helping families in emerging markets protect savings from inflation
+- making financial education easier for families
+- using Web3 infrastructure under the hood while keeping the experience simple
+- building long-term trust through educational content
+
+Please complete the full workflow:
+
+Research → Strategy → Content → Notion → Delivery
+```
+
+This issue is intentionally high-level.
+
+It should work without listing every internal signal, artifact, or subtask template.
+
+---
+
+## Weekly 7-day pass/fail criteria
+
+The weekly test passes only if:
+
+- Porky creates only Babe first
+- Babe subtask has a complete description
+- Babe completes the audit on the parent issue
+- Porky validates audit before creating strategy
+- Porky creates Hamm only after strategy is valid
+- Hamm subtask has a complete description
+- Hamm creates 9 total content items
+- Hamm posts content_set on the parent issue
+- Porky creates Pumba only after content_set validation
+- Pumba subtask has a complete description
+- Pumba persists 9 content items in Notion
+- Pumba persists Research Babe
+- Pumba sends Telegram once
+- All final artifacts and signals are visible on the parent issue
+
+The weekly test fails if:
+
+- Hamm is created before Babe completes
+- Pumba is created before Hamm completes
+- Any subtask is title-only
+- Any final artifact exists only on a subtask
+- Content is persisted in Notes
+- Research Babe is missing
+- Telegram is duplicated
+- Porky completes without final validation
 
 ---
 
@@ -419,9 +362,9 @@ Validate a longer content range and stronger scheduling behavior.
 
 ### Expected output
 
-- 11 total content items
-- Exactly 1 item per scheduled date
-- At least 3 X threads per week
+- 11 total content items, unless otherwise specified
+- Exactly 1 item per scheduled date when requested
+- At least 3 X threads per week when weekly thread rules apply
 - No missing dates
 - No duplicates
 - Research Babe page
@@ -434,6 +377,7 @@ Validate a longer content range and stronger scheduling behavior.
 - Thread ratio
 - Notion scaling
 - Idempotency across more items
+- Stability of the orchestration loop across a larger workload
 
 ---
 
@@ -441,14 +385,34 @@ Validate a longer content range and stronger scheduling behavior.
 
 After every E2E test, verify the following manually or automatically.
 
+### Parent issue
+
+- Parent issue contains all final artifacts
+- Parent issue contains all final signals
+- Parent issue shows clear phase progression
+- Final Porky summary exists
+- No final completion depends only on subtask-only evidence
+
+### Subtasks
+
+- Babe subtask exists first
+- Babe subtask has a complete description
+- Hamm subtask is created only after audit and strategy validation
+- Hamm subtask has a complete description
+- Pumba subtask is created only after content validation
+- Pumba subtask has a complete description
+- No title-only subtasks exist
+
 ### Babe
 
 - `ARTIFACT: type: audit` exists
 - Artifact appears before `AUDIT_READY`
 - Required sections are present
+- `critical_flags` exists, even if empty
 - Uncertainty is included
 - Recommended content angles are included
-- Signal is propagated to parent issue
+- Artifact and signal appear on parent issue
+- Babe does not run broad Paperclip reference discovery before completing audit
 
 ### Porky
 
@@ -459,7 +423,9 @@ After every E2E test, verify the following manually or automatically.
 - Messaging pillars are present
 - Content angles are present
 - Strategy maps to audit
+- If risks exist, `excluded_claims` and `safe_framing` exist
 - Porky does not advance with invalid artifacts
+- Porky does not create downstream subtasks early
 
 ### Hamm
 
@@ -471,10 +437,13 @@ After every E2E test, verify the following manually or automatically.
 - Threads include `thread_id` and `tweets`
 - Thread tweets are ordered
 - No duplicate titles
-- Signal is propagated to parent issue
+- Content respects `excluded_claims`
+- Content uses `safe_framing` when required
+- Artifact and signal appear on parent issue
 
 ### Pumba
 
+- Pumba starts only after explicit delegation
 - Content Pipeline pages exist
 - Research Babe page exists
 - No duplicate content pages
@@ -486,7 +455,9 @@ After every E2E test, verify the following manually or automatically.
 - Content is not in `Notes`
 - Threads are split into ordered body blocks
 - Telegram summary is sent once
-- Both Pumba signals are propagated
+- `notion_content_pipeline` artifact appears on parent issue
+- `telegram_delivery` artifact appears on parent issue
+- Both Pumba signals appear on parent issue
 
 ---
 
@@ -572,25 +543,107 @@ Expected behavior:
 
 ---
 
+### Failure test 6 — Title-only subtask
+
+Simulate:
+
+- Porky creates a Babe, Hamm, or Pumba subtask with only a title and no complete description
+
+Expected behavior:
+
+- The delegation is invalid
+- Porky must update the subtask description if possible
+- If Porky cannot update it, Porky must block and identify missing context
+- The assigned specialist should not guess missing requirements
+
+---
+
+### Failure test 7 — Premature Hamm execution
+
+Simulate:
+
+- Hamm starts before Babe audit and Porky strategy are valid
+
+Expected behavior:
+
+- Hamm must not generate content
+- Hamm should block or stop based on missing strategy
+- Porky should treat the premature execution as invalid
+- Pumba must not run
+
+---
+
+### Failure test 8 — Premature Pumba execution
+
+Simulate:
+
+- Pumba wakes before Porky explicitly delegates Notion + Delivery
+
+Expected behavior:
+
+- Pumba must not persist content
+- Pumba must not send Telegram
+- Pumba must not emit `NOTION_SYNC_COMPLETE`
+- Pumba must not emit `DELIVERY_COMPLETE`
+- Pumba should exit cleanly or leave a waiting note
+- This should not be treated as workflow failure unless Porky had already delegated Pumba
+
+---
+
+### Failure test 9 — Missing critical_flags
+
+Simulate:
+
+- Babe publishes an audit artifact without `critical_flags`
+
+Expected behavior:
+
+- Porky treats the audit artifact as incomplete
+- Porky blocks before strategy
+- Babe must republish the audit artifact with `critical_flags`, even if empty
+
+---
+
+### Failure test 10 — Unsafe claim used in content
+
+Simulate:
+
+- Babe flags an unsafe claim
+- Porky strategy excludes the claim
+- Hamm uses the excluded claim anyway
+
+Expected behavior:
+
+- Porky rejects `CONTENT_SET_READY`
+- Workflow blocks
+- Hamm must revise content to remove excluded claims
+
+---
+
 ## Regression testing
 
 Run a controlled E2E test after changing:
 
 - Any `AGENTS.md`
+- Any `HEARTBEAT.md`
 - Signal contract
 - Artifact contract
 - Notion schema
 - Pumba persistence logic
 - Porky validation gates
 - Delivery behavior
+- Subtask creation behavior
+- Direct assignment execution behavior
 
 Recommended regression test:
 
 - 3-day controlled E2E
+- Vague parent issue
 - 1 X thread
 - 1 X post
 - 1 LinkedIn post
 - Research Babe required
+- Telegram required
 
 ---
 
@@ -601,7 +654,13 @@ An E2E test passes only when:
 - All required artifacts exist
 - All required signals exist
 - Artifacts appear before completion signals
+- All final artifacts and signals appear on the parent issue
 - Porky validates each phase
+- Porky delegates sequentially
+- Porky creates complete subtask descriptions
+- No title-only subtasks exist
+- Hamm does not start early
+- Pumba does not start early
 - Notion content is correctly persisted
 - Research Babe is created or updated
 - Telegram summary is sent once
@@ -618,9 +677,11 @@ E2E testing confirms that Open Agentic CMO works as a system, not just as a coll
 A valid test proves that the workflow is:
 
 - deterministic
+- sequential
 - artifact-driven
 - signal-driven
 - validation-first
+- context-rich
 - idempotent
 - recoverable
 - human-reviewable
