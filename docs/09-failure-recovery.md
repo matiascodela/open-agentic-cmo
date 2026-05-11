@@ -1,12 +1,12 @@
 # Failure Recovery
 
-Failure recovery defines how Open Agentic CMO handles incomplete, invalid, or corrupted workflow states.
+Failure recovery defines how Open Agentic CMO handles incomplete, invalid, premature, or corrupted workflow states.
 
 The goal is not to avoid every possible failure.
 
 The goal is to make failures explicit, recoverable, and safe.
 
-Open Agentic CMO should never silently continue when a required signal, artifact, or persisted output is missing or invalid.
+Open Agentic CMO should never silently continue when a required signal, artifact, subtask description, or persisted output is missing or invalid.
 
 ---
 
@@ -21,7 +21,61 @@ The system should only continue when:
 1. The required signal exists or can be reconciled.
 2. The required artifact exists.
 3. The artifact passes validation.
-4. Downstream execution will not duplicate or corrupt data.
+4. The responsible agent is the correct producer.
+5. The artifact and signal are visible on the parent issue.
+6. Downstream execution will not duplicate or corrupt data.
+7. The next delegated subtask has a complete description.
+
+---
+
+## Canonical workflow order
+
+Failure recovery must preserve the canonical workflow order:
+
+```text
+Porky → Babe → Porky → Hamm → Porky → Pumba → Porky
+```
+
+The workflow must not recover by skipping phases or allowing downstream agents to run early.
+
+Required order:
+
+1. Porky delegates Babe.
+2. Babe produces `audit`.
+3. Porky validates `audit`.
+4. Porky produces `strategy`.
+5. Porky delegates Hamm.
+6. Hamm produces `content_set`.
+7. Porky validates `content_set`.
+8. Porky delegates Pumba.
+9. Pumba persists Notion + Research Babe.
+10. Pumba sends Telegram.
+11. Porky validates final state.
+
+If recovery would violate this order, it must block.
+
+---
+
+## Parent issue as source of truth
+
+The original parent issue is the canonical workflow record.
+
+Subtasks may contain useful execution details, but final workflow state must be visible on the parent issue.
+
+Required parent issue evidence:
+
+- `ARTIFACT: type: audit`
+- `SIGNAL: type: AUDIT_READY`
+- `ARTIFACT: type: strategy`
+- `SIGNAL: type: SYNTHESIS_READY`
+- `ARTIFACT: type: content_set`
+- `SIGNAL: type: CONTENT_SET_READY`
+- `ARTIFACT: type: notion_content_pipeline`
+- `SIGNAL: type: NOTION_SYNC_COMPLETE`
+- `ARTIFACT: type: telegram_delivery`
+- `SIGNAL: type: DELIVERY_COMPLETE`
+
+If an artifact or signal exists only in a subtask, Porky may use it for reconciliation, but final completion requires parent issue visibility.
 
 ---
 
@@ -37,6 +91,9 @@ Porky is responsible for:
 - Extracting artifacts
 - Validating signals
 - Validating artifacts
+- Validating parent issue visibility
+- Validating subtask description completeness
+- Detecting premature downstream execution
 - Detecting missing or invalid outputs
 - Blocking unsafe transitions
 - Requesting corrections from the responsible agent
@@ -47,11 +104,18 @@ Specialist agents are responsible for fixing their own outputs.
 | Failure area | Responsible agent |
 |---|---|
 | Missing or invalid audit artifact | Babe |
+| Missing `critical_flags` | Babe |
+| Babe unbounded reference discovery | Babe |
 | Missing or invalid strategy artifact | Porky |
-| Missing or invalid content_set artifact | Hamm |
+| Missing `excluded_claims` / `safe_framing` when risks exist | Porky |
+| Title-only or incomplete subtask | Porky |
+| Missing or invalid `content_set` artifact | Hamm |
+| Unsafe excluded claim used in content | Hamm |
 | Notion persistence issue | Pumba |
 | Missing Research Babe page | Pumba |
 | Telegram delivery issue | Pumba |
+| Early Pumba execution before delegation | Pumba + Porky |
+| Early Hamm execution before strategy | Hamm + Porky |
 
 ---
 
@@ -62,13 +126,17 @@ When Porky detects a failure:
 1. Identify the current phase.
 2. Identify the missing or invalid requirement.
 3. Identify the responsible agent.
-4. Block the workflow.
-5. Write a clear reason.
-6. Request the exact correction needed.
-7. Do not advance downstream.
-8. Resume only after the corrected artifact or output passes validation.
+4. Determine whether the parent issue has the required evidence.
+5. Determine whether downstream execution has already happened.
+6. Block the workflow if continuing would be unsafe.
+7. Write a clear reason.
+8. Request the exact correction needed.
+9. Do not advance downstream.
+10. Resume only after the corrected artifact or output passes validation.
 
 Porky should not restart the full workflow if only one phase failed.
+
+Recovery should resume from the failed phase.
 
 ---
 
@@ -90,6 +158,16 @@ Responsible agent: Hamm
 Problem: CONTENT_SET_READY was emitted, but no full content_set artifact exists.
 Why blocked: Pumba cannot persist content without validated content_items.
 Required next action: Hamm must publish the complete ARTIFACT: type: content_set block before emitting CONTENT_SET_READY again.
+```
+
+For delegation failures:
+
+```text
+Blocked phase: Delegation
+Responsible agent: Porky
+Problem: Hamm subtask exists but has only a title and no complete description.
+Why blocked: Hamm does not have strategy context, required artifact contract, or validation criteria.
+Required next action: Porky must update the Hamm subtask issue body with a complete phase-specific description before Hamm starts.
 ```
 
 ---
@@ -126,6 +204,8 @@ timestamp: <TIMESTAMP>
 A `BLOCKED` signal does not mean the workflow is permanently failed.
 
 It means the workflow cannot safely continue until the issue is corrected.
+
+Pumba should not emit noisy `BLOCKED` signals for harmless early wake-ups before Porky explicitly delegates the Notion + Delivery phase.
 
 ---
 
@@ -191,9 +271,10 @@ Porky should:
 
 1. Validate the artifact.
 2. Confirm it belongs to the parent workflow.
-3. Register internal completion for the phase.
-4. Request signal propagation from Babe if needed.
-5. Continue safely if the artifact is valid.
+3. Confirm it is visible on the parent issue or safely reconcile it.
+4. Register internal completion for the phase.
+5. Request signal propagation from Babe if needed.
+6. Continue safely if the artifact is valid.
 
 ### Recovery action
 
@@ -214,11 +295,33 @@ The workflow may continue once Porky has validated the artifact.
 
 ---
 
-## Failure type 3 — Artifact exists but is incomplete
+## Failure type 3 — Artifact exists only on subtask
 
 ### Example
 
-Babe posts an audit artifact without uncertainty or recommended content angles.
+Hamm posts the full `content_set` artifact on the Hamm subtask, but not on the parent issue.
+
+### Expected behavior
+
+Porky may use the subtask artifact for reconciliation, but the workflow is not fully compliant.
+
+Final completion requires parent issue visibility.
+
+### Recovery action
+
+Hamm should copy the exact same artifact and signal to the parent issue.
+
+If Hamm cannot do it, Porky should request propagation or perform safe reconciliation according to runtime rules.
+
+The artifact and signal must not be modified when copied.
+
+---
+
+## Failure type 4 — Audit artifact is incomplete
+
+### Example
+
+Babe posts an audit artifact without uncertainty, recommended content angles, or `critical_flags`.
 
 ### Expected behavior
 
@@ -236,12 +339,51 @@ Babe must update the audit artifact with all required sections:
 - Uncertainty / Data Gaps
 - Opportunities
 - Recommended Content Angles
+- Critical Flags
+
+If no critical flags exist, Babe must include:
+
+```text
+critical_flags: []
+```
 
 Porky should not synthesize strategy until the audit artifact passes validation.
 
 ---
 
-## Failure type 4 — Strategy artifact is missing or too vague
+## Failure type 5 — Babe spends run on Paperclip reference discovery
+
+### Example
+
+Babe wakes on an assigned research task but spends the run reading Paperclip reference documentation, inspecting unrelated issues, or exploring the environment instead of executing `audit.digital_presence`.
+
+The process times out, crashes, or produces no audit artifact.
+
+### Expected behavior
+
+The workflow should not advance.
+
+Porky should treat the research phase as incomplete.
+
+### Recovery action
+
+Babe must follow direct assignment execution:
+
+1. Read the assigned issue.
+2. Extract `parent_issue_id` and `subtask_issue_id`.
+3. Validate required inputs.
+4. Run `audit.digital_presence`.
+5. Produce the audit artifact.
+6. Post artifact and `AUDIT_READY` on the parent issue.
+7. Stop.
+
+Babe should not read Paperclip reference docs unless a required API or tool call fails and the reference is needed to recover.
+
+If `audit.digital_presence` cannot complete, Babe must emit `BLOCKED` with the exact reason.
+
+---
+
+## Failure type 6 — Strategy artifact is missing or too vague
 
 ### Example
 
@@ -275,7 +417,51 @@ Only then should Porky emit `SYNTHESIS_READY`.
 
 ---
 
-## Failure type 5 — Content set is incomplete
+## Failure type 7 — Critical risk not resolved in strategy
+
+### Example
+
+Babe flags a high-severity chain positioning uncertainty.
+
+Porky creates a strategy that uses the risky claim anyway, without excluding or safely framing it.
+
+### Expected behavior
+
+Porky must block before delegating to Hamm.
+
+### Recovery action
+
+Porky must choose one of two paths:
+
+### Path 1 — Block for confirmation
+
+Use this when the uncertainty prevents safe content strategy.
+
+```text
+Status: BLOCKED — Strategy requires confirmation
+
+Reason:
+Babe identified an unresolved publishing risk.
+
+Required confirmation:
+<exact confirmation needed>
+```
+
+### Path 2 — Safe strategy
+
+Use this when content can proceed without the risky claim.
+
+The strategy must include:
+
+- `excluded_claims`
+- `safe_framing`
+- `content_rules` that forbid risky claims
+
+Hamm may only start after the revised strategy passes validation.
+
+---
+
+## Failure type 8 — Content set is incomplete
 
 ### Example
 
@@ -323,7 +509,7 @@ Threads must include:
 
 ---
 
-## Failure type 6 — Content item missing required fields
+## Failure type 9 — Content item missing required fields
 
 ### Example
 
@@ -348,7 +534,7 @@ If the content was already persisted incorrectly, Pumba must update the Notion p
 
 ---
 
-## Failure type 7 — Thread structure is invalid
+## Failure type 10 — Thread structure is invalid
 
 ### Example
 
@@ -376,7 +562,33 @@ Hamm must correct the thread so it includes:
 
 ---
 
-## Failure type 8 — Content persisted into Notes
+## Failure type 11 — Unsafe excluded claim used in content
+
+### Example
+
+Babe flags a risky claim.
+
+Porky strategy includes it under `excluded_claims`.
+
+Hamm still uses the excluded claim in a title, hook, post, thread, CTA, tag, or implied framing.
+
+### Expected behavior
+
+Porky must reject `CONTENT_SET_READY`.
+
+Pumba must not persist the content.
+
+### Recovery action
+
+Hamm must revise the content to remove the excluded claim.
+
+If `safe_framing` is provided, Hamm must use it.
+
+Porky validates the revised `content_set` before delegating Pumba.
+
+---
+
+## Failure type 12 — Content persisted into Notes
 
 ### Example
 
@@ -397,11 +609,11 @@ Pumba must update the Notion pages:
 - Remove content from `Notes` if safe
 - Preserve required properties
 
-After correction, Pumba may emit `NOTION_SYNC_COMPLETE`.
+After correction and verification, Pumba may emit `NOTION_SYNC_COMPLETE`.
 
 ---
 
-## Failure type 9 — Required Notion properties are missing
+## Failure type 13 — Required Notion properties are missing
 
 ### Example
 
@@ -426,7 +638,7 @@ Pumba must not create a duplicate page.
 
 ---
 
-## Failure type 10 — Research Babe page is missing
+## Failure type 14 — Research Babe page is missing
 
 ### Example
 
@@ -459,11 +671,12 @@ The page must include:
 - Uncertainty / Data Gaps
 - Opportunities
 - Recommended Content Angles
+- Critical Flags, if present
 - Source / Workflow Metadata
 
 ---
 
-## Failure type 11 — Duplicate Notion entries
+## Failure type 15 — Duplicate Notion entries
 
 ### Example
 
@@ -493,7 +706,7 @@ Pumba should:
 
 ---
 
-## Failure type 12 — Duplicate Research Babe pages
+## Failure type 16 — Duplicate Research Babe pages
 
 ### Example
 
@@ -517,7 +730,7 @@ Pumba should preserve the correct page and remove, archive, or mark duplicates a
 
 ---
 
-## Failure type 13 — Telegram summary missing
+## Failure type 17 — Telegram summary missing
 
 ### Example
 
@@ -529,7 +742,20 @@ Porky must not complete the workflow.
 
 ### Recovery action
 
-Pumba must send the Telegram summary and emit:
+Pumba must send the Telegram summary and publish the delivery artifact:
+
+```text
+ARTIFACT:
+type: telegram_delivery
+issue: <PARENT_ISSUE_ID>
+subtask_issue: <PUMBA_SUBTASK_ISSUE_ID>
+telegram_summary_sent: true
+duplicate_delivery: false
+timestamp:
+...
+```
+
+Then emit:
 
 ```text
 SIGNAL:
@@ -544,7 +770,7 @@ timestamp: <TIMESTAMP>
 
 ---
 
-## Failure type 14 — Duplicate Telegram summary
+## Failure type 18 — Duplicate Telegram summary
 
 ### Example
 
@@ -562,31 +788,113 @@ If a duplicate was already sent, Pumba should record that duplicate delivery occ
 
 ---
 
-## Failure type 15 — Downstream agent executed too early
+## Failure type 19 — Downstream agent executed too early
 
 ### Example
 
-Pumba runs before Hamm has produced a valid `content_set`.
+Hamm runs before Porky has emitted a valid `SYNTHESIS_READY`.
+
+Or Pumba runs before Hamm has produced a valid `content_set`.
 
 ### Expected behavior
 
-Pumba should block.
+The early downstream execution is invalid.
 
-Porky should prevent future early execution by enforcing downstream execution rules.
+Hamm must not generate content before valid strategy exists.
+
+Pumba must not persist content before valid `content_set` and audit artifacts exist.
 
 ### Recovery action
 
-Porky must wait for:
+Porky must return to the correct phase and wait for:
+
+For Hamm:
 
 - valid audit artifact
 - valid strategy artifact
-- valid content_set artifact
+- `SYNTHESIS_READY`
+- explicit Porky delegation
 
-before allowing Pumba to run.
+For Pumba:
+
+- valid audit artifact
+- valid content_set artifact
+- `CONTENT_SET_READY`
+- explicit Porky delegation
+
+Premature downstream output should not be trusted unless Porky can safely reconcile it against the correct validated inputs.
 
 ---
 
-## Failure type 16 — Wrong producer emits a signal
+## Failure type 20 — Pumba wakes early before explicit delegation
+
+### Example
+
+Pumba wakes before Porky has delegated the Notion + Delivery phase.
+
+### Expected behavior
+
+Pumba must not persist anything.
+
+Pumba must not send Telegram.
+
+Pumba must not emit:
+
+- `NOTION_SYNC_COMPLETE`
+- `DELIVERY_COMPLETE`
+
+Pumba should not emit a noisy `BLOCKED` signal unless Porky had already explicitly delegated Pumba and required inputs are missing.
+
+### Recovery action
+
+Pumba should exit cleanly or leave a waiting note:
+
+```text
+Status: WAITING
+
+Reason:
+Pumba is awaiting explicit delegation from Porky for the Notion + Delivery phase.
+Required upstream inputs are not yet validated or not yet delegated.
+```
+
+Porky should ensure Pumba is not created until the audit and content_set artifacts are valid.
+
+---
+
+## Failure type 21 — Title-only subtask
+
+### Example
+
+Porky creates a Babe, Hamm, or Pumba subtask with only a title and no meaningful issue body.
+
+### Expected behavior
+
+The delegation is invalid.
+
+The assigned specialist does not have enough context to execute deterministically.
+
+### Recovery action
+
+Porky must update the subtask description with:
+
+- parent issue ID
+- phase
+- assigned agent
+- objective
+- source parent brief
+- required inputs
+- required output artifact
+- required signal
+- validation criteria
+- blocking conditions
+- constraints
+- parent issue source-of-truth rule
+
+If Porky cannot produce a complete subtask description, Porky must block.
+
+---
+
+## Failure type 22 — Wrong producer emits a signal
 
 ### Example
 
@@ -604,7 +912,7 @@ The correct agent must emit the correct signal after producing the correct artif
 
 ---
 
-## Failure type 17 — Malformed signal
+## Failure type 23 — Malformed signal
 
 ### Example
 
@@ -624,7 +932,7 @@ The producing agent must repost the signal correctly.
 
 ---
 
-## Failure type 18 — Parent issue propagation missing
+## Failure type 24 — Parent issue propagation missing
 
 ### Example
 
@@ -636,15 +944,19 @@ Porky may still find the subtask signal if it scans subtasks.
 
 However, the workflow is not fully compliant.
 
+Final workflow completion requires parent issue visibility.
+
 ### Recovery action
 
 Hamm must copy the exact same signal block to the parent issue.
 
 The signal must not be regenerated or modified.
 
+If the artifact is also missing from the parent issue, Hamm must copy the artifact too.
+
 ---
 
-## Failure type 19 — Timeout or stalled workflow
+## Failure type 25 — Timeout or stalled workflow
 
 ### Example
 
@@ -673,12 +985,14 @@ Porky should:
 1. Scan parent issue.
 2. Scan all subtasks.
 3. Look for valid artifacts.
-4. If valid artifact exists, continue.
-5. If no valid artifact exists, block and request the missing output.
+4. Check whether the next specialist was delegated with a complete description.
+5. If valid artifact exists, continue.
+6. If no valid artifact exists, block and request the missing output.
+7. If the specialist subtask is title-only or incomplete, update the description before retrying.
 
 ---
 
-## Failure type 20 — Partial Notion persistence
+## Failure type 26 — Partial Notion persistence
 
 ### Example
 
@@ -706,12 +1020,16 @@ When recovering a workflow, verify:
 - Does the required signal exist?
 - Is the signal valid?
 - Is the artifact valid?
-- Has the signal been propagated to the parent issue?
+- Is the artifact visible on the parent issue?
+- Is the signal visible on the parent issue?
 - Has downstream execution already occurred?
+- Was downstream execution premature?
 - Would retrying create duplicates?
 - Can the system resume from the current state?
 - Is Notion already partially updated?
 - Is Telegram already sent?
+- Does the current specialist subtask have a complete description?
+- Is the missing work limited to one phase?
 
 ---
 
@@ -726,8 +1044,12 @@ Before retrying, check:
 - Does a valid Research Babe page already exist?
 - Was Telegram already sent?
 - Is the missing work limited to one phase?
+- Has the next specialist already been delegated?
+- Does the delegated subtask have a complete description?
 
 Retries should resume from the failed phase, not from the beginning.
+
+If only a subtask description is missing, fix the subtask description before re-running the specialist.
 
 ---
 
@@ -744,6 +1066,12 @@ Do not:
 - Accept summaries as artifacts
 - Invent missing fields
 - Move forward with corrupted state
+- Create Hamm before strategy is valid
+- Create Pumba before content_set is valid
+- Treat early Pumba wake-up as workflow failure
+- Let specialists guess from title-only subtasks
+- Put required context only in a later comment if the issue body can be updated
+- Complete the workflow with subtask-only evidence
 
 ---
 
@@ -760,7 +1088,7 @@ Resolution:
 - Porky blocks.
 - Hamm publishes full `content_set`.
 - Porky validates.
-- Pumba runs.
+- Pumba runs only after validation.
 
 ---
 
@@ -794,6 +1122,35 @@ Resolution:
 
 ---
 
+### Example 4 — Title-only Hamm subtask
+
+Problem:
+
+Porky creates a Hamm subtask with only a title.
+
+Resolution:
+
+- Porky treats the delegation as invalid.
+- Porky updates the subtask description with the strategy artifact, constraints, expected output, signal contract, and parent issue source-of-truth rule.
+- Hamm executes only after the description is complete.
+
+---
+
+### Example 5 — Unsafe claim used in content
+
+Problem:
+
+Babe flags a risky claim. Porky excludes it. Hamm uses it anyway.
+
+Resolution:
+
+- Porky rejects `CONTENT_SET_READY`.
+- Hamm removes the excluded claim.
+- Hamm uses safe framing.
+- Porky validates revised content before delegating Pumba.
+
+---
+
 ## Summary
 
 Failure recovery in Open Agentic CMO is based on a simple rule:
@@ -804,8 +1161,10 @@ Recovery should be:
 
 - explicit
 - phase-specific
+- sequential
 - idempotent
 - artifact-driven
+- parent-issue-visible
 - safe for downstream execution
 
 The system should never hide failure behind a successful-looking signal.
