@@ -10,6 +10,7 @@
     "issue",
     "subtask_issue",
     "content_items_persisted",
+    "expected_content_items",
     "research_babe_persisted",
     "duplicates_found",
     "notes_used_for_content",
@@ -48,7 +49,7 @@
     },
     "expected_content_items": {
       "type": "integer",
-      "description": "Expected number of content items from the content_set artifact, when available.",
+      "description": "Expected number of content items from the content_set artifact.",
       "minimum": 0,
       "examples": [
         3
@@ -296,6 +297,7 @@
               "Uncertainty / Data Gaps",
               "Opportunities",
               "Recommended Content Angles",
+              "Critical Flags",
               "Source / Workflow Metadata"
             ]
           },
@@ -330,6 +332,30 @@
           "properties_verified": true,
           "thread_blocks_count": 5,
           "expected_tweets_count": 5
+        },
+        {
+          "title": "Money habits start before kids earn money",
+          "platform": "X",
+          "scheduled_date": "2026-05-12",
+          "content_type": "post",
+          "status": "Scheduled",
+          "version": "v1",
+          "week": "2026-W20",
+          "body_verified": true,
+          "notes_empty": true,
+          "properties_verified": true
+        },
+        {
+          "title": "Families need simpler financial defaults",
+          "platform": "LinkedIn",
+          "scheduled_date": "2026-05-13",
+          "content_type": "post",
+          "status": "Scheduled",
+          "version": "v1",
+          "week": "2026-W20",
+          "body_verified": true,
+          "notes_empty": true,
+          "properties_verified": true
         }
       ],
       "research_babe_page": {
@@ -345,6 +371,7 @@
           "Uncertainty / Data Gaps",
           "Opportunities",
           "Recommended Content Angles",
+          "Critical Flags",
           "Source / Workflow Metadata"
         ]
       },
