@@ -56,6 +56,43 @@
           }
         ]
       }
+    },
+    "safety_validation": {
+      "type": "object",
+      "description": "Optional artifact-level safety validation performed by Hamm against Porky's strategy artifact. Semantic enforcement is handled by Porky runtime validation.",
+      "additionalProperties": false,
+      "required": [
+        "strategy_artifact_used",
+        "excluded_claims_checked",
+        "safe_framing_applied",
+        "unsupported_claims_present"
+      ],
+      "properties": {
+        "strategy_artifact_used": {
+          "type": "boolean",
+          "description": "Whether Hamm used Porky's validated strategy artifact.",
+          "const": true
+        },
+        "excluded_claims_checked": {
+          "type": "boolean",
+          "description": "Whether Hamm checked the content against excluded_claims when present.",
+          "const": true
+        },
+        "safe_framing_applied": {
+          "type": "boolean",
+          "description": "Whether Hamm applied safe_framing when required by the strategy artifact."
+        },
+        "unsupported_claims_present": {
+          "type": "boolean",
+          "description": "Whether unsupported product, financial, chain, or Web3 claims remain in the content.",
+          "const": false
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional short explanation of any relevant safety handling.",
+          "minLength": 1
+        }
+      }
     }
   },
   "$defs": {
@@ -144,6 +181,45 @@
             "minLength": 1
           },
           "uniqueItems": true
+        },
+        "strategy_alignment": {
+          "$ref": "#/$defs/strategy_alignment"
+        }
+      }
+    },
+    "strategy_alignment": {
+      "type": "object",
+      "description": "Optional item-level mapping back to Porky's strategy artifact.",
+      "additionalProperties": false,
+      "required": [
+        "messaging_pillar",
+        "content_angle",
+        "strategic_goal"
+      ],
+      "properties": {
+        "messaging_pillar": {
+          "type": "string",
+          "description": "Messaging pillar from Porky's strategy artifact that this item supports.",
+          "minLength": 1
+        },
+        "content_angle": {
+          "type": "string",
+          "description": "Content angle from Porky's strategy artifact that this item executes.",
+          "minLength": 1
+        },
+        "strategic_goal": {
+          "type": "string",
+          "description": "Strategic goal this content item serves.",
+          "minLength": 1
+        },
+        "uses_safe_framing": {
+          "type": "boolean",
+          "description": "Whether this item uses safe_framing from the strategy artifact when required."
+        },
+        "excluded_claims_avoided": {
+          "type": "boolean",
+          "description": "Whether this item avoids excluded_claims from the strategy artifact.",
+          "const": true
         }
       }
     },
@@ -233,13 +309,20 @@
             "#FinancialEducation",
             "#FamilyFinance"
           ],
+          "strategy_alignment": {
+            "messaging_pillar": "Saving is a habit, protection is a system",
+            "content_angle": "Why a traditional piggy bank is no longer enough",
+            "strategic_goal": "Educate parents on inflation-aware saving without making guaranteed protection claims.",
+            "uses_safe_framing": true,
+            "excluded_claims_avoided": true
+          },
           "thread_id": "TH-2026-05-11-1",
           "tweets": [
             "A piggy bank teaches kids to save. But in inflationary economies, saving alone is no longer enough.",
-            "When prices rise, money that sits still quietly loses purchasing power.",
+            "When prices rise, money that sits still can quietly lose purchasing power.",
             "That means families need two things: better money habits and better protection systems.",
-            "Piggy Wallet is built around that idea: helping families teach saving while protecting value in a simple way.",
-            "The future of financial education is not more complexity. It is safer defaults that families can actually understand."
+            "Piggy Wallet is designed around that idea: helping families build saving habits while making modern financial tools easier to understand.",
+            "The future of financial education is not more complexity. It is simpler defaults that families can actually use."
           ]
         },
         {
@@ -255,6 +338,13 @@
             "#MoneyHabits",
             "#FinancialLiteracy"
           ],
+          "strategy_alignment": {
+            "messaging_pillar": "Financial education starts before kids earn money",
+            "content_angle": "Why kids need money habits before they need money",
+            "strategic_goal": "Build educational trust with parents.",
+            "uses_safe_framing": false,
+            "excluded_claims_avoided": true
+          },
           "body": "Kids do not need to earn money before they start learning about it. Small habits — saving, waiting, choosing, planning — shape how they understand value later. Financial education starts long before the first paycheck."
         },
         {
@@ -271,9 +361,23 @@
             "#FinancialEducation",
             "#FamilyFinance"
           ],
+          "strategy_alignment": {
+            "messaging_pillar": "Simple user experience over financial complexity",
+            "content_angle": "Safer financial defaults for busy parents",
+            "strategic_goal": "Position Piggy Wallet as helpful and understandable rather than complex or speculative.",
+            "uses_safe_framing": true,
+            "excluded_claims_avoided": true
+          },
           "body": "Parents do not need more financial complexity. They need tools that make better money habits easier to build and safer to maintain. At Piggy Wallet, we believe family finance should feel simple, educational, and protective — especially in markets where inflation can quietly erode savings over time."
         }
-      ]
+      ],
+      "safety_validation": {
+        "strategy_artifact_used": true,
+        "excluded_claims_checked": true,
+        "safe_framing_applied": true,
+        "unsupported_claims_present": false,
+        "notes": "Content avoids guarantee language, risk-free savings claims, and unsupported chain-specific positioning."
+      }
     }
   ]
 }
