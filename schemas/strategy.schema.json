@@ -202,6 +202,76 @@
           }
         }
       }
+    },
+    "excluded_claims": {
+      "type": "array",
+      "description": "Claims that Hamm must not use. Required by runtime validation when Babe's audit contains publishing risks, unsupported claims, or critical_flags that affect publishing.",
+      "items": {
+        "$ref": "#/$defs/excluded_claim"
+      },
+      "uniqueItems": true
+    },
+    "safe_framing": {
+      "type": "array",
+      "description": "Safe alternative framing Hamm should use when writing around uncertain, sensitive, or risky topics. Required by runtime validation when Babe's audit contains publishing risks or unsafe claims.",
+      "items": {
+        "$ref": "#/$defs/safe_framing_item"
+      },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "excluded_claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim",
+        "reason"
+      ],
+      "properties": {
+        "claim": {
+          "type": "string",
+          "description": "Claim that must not be used in downstream content.",
+          "minLength": 1,
+          "examples": [
+            "Piggy Wallet guarantees inflation protection."
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "description": "Why the claim is excluded.",
+          "minLength": 1,
+          "examples": [
+            "Guarantee language is unsupported and unsafe."
+          ]
+        }
+      }
+    },
+    "safe_framing_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "framing",
+        "reason"
+      ],
+      "properties": {
+        "framing": {
+          "type": "string",
+          "description": "Safe framing that Hamm may use in content.",
+          "minLength": 1,
+          "examples": [
+            "Piggy Wallet is designed to help families build better savings habits."
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "description": "Why this framing is safe and appropriate.",
+          "minLength": 1,
+          "examples": [
+            "This keeps the claim educational and mission-aligned without implying guaranteed financial outcomes."
+          ]
+        }
+      }
     }
   },
   "examples": [
@@ -217,7 +287,11 @@
         },
         {
           "pillar": "Saving is a habit, protection is a system",
-          "reasoning": "The audit identifies inflation as a practical family problem."
+          "reasoning": "The audit identifies inflation as a practical family problem. Piggy Wallet should connect healthy saving behavior with protection against value erosion, without implying guaranteed protection or risk-free outcomes."
+        },
+        {
+          "pillar": "Simple user experience over financial complexity",
+          "reasoning": "Piggy Wallet uses modern financial infrastructure, but the audience should not need to understand technical concepts to trust the product."
         }
       ],
       "content_angles": [
@@ -229,7 +303,12 @@
         {
           "angle": "Why a traditional piggy bank is no longer enough",
           "source_from_audit": "Audit identified inflation pressure as a key family concern.",
-          "goal": "Explain the need for modern savings protection."
+          "goal": "Explain the need for modern savings habits and protection systems without making guaranteed protection claims."
+        },
+        {
+          "angle": "Safer financial defaults for busy parents",
+          "source_from_audit": "Audit identified simplicity and trust as key positioning needs.",
+          "goal": "Position Piggy Wallet as helpful and understandable rather than complex or speculative."
         }
       ],
       "weekly_structure": [
@@ -267,6 +346,15 @@
         },
         {
           "constraint": "Avoid crypto jargon unless explicitly necessary."
+        },
+        {
+          "constraint": "Emphasize simplicity, education, trust, and family outcomes."
+        },
+        {
+          "constraint": "Do not invent product capabilities that are not verified."
+        },
+        {
+          "constraint": "Do not make guarantees about inflation protection, returns, safety, or risk elimination."
         }
       ],
       "content_rules": [
@@ -280,7 +368,131 @@
           "rule": "Include 1 X thread, 1 X post, and 1 LinkedIn post."
         },
         {
+          "rule": "The X thread must include 4–7 tweets."
+        },
+        {
+          "rule": "Every content item must include title, platform, language, content_type, scheduled_date, vertical, version, week, and tags_and_mentions."
+        },
+        {
+          "rule": "Posts must include body."
+        },
+        {
+          "rule": "Threads must include thread_id and tweets."
+        },
+        {
           "rule": "Use version v1 unless otherwise specified."
+        },
+        {
+          "rule": "Use ISO week format YYYY-WXX."
+        },
+        {
+          "rule": "Do not duplicate titles or angles."
+        },
+        {
+          "rule": "Do not use excluded claims."
+        },
+        {
+          "rule": "Use safe framing when discussing inflation protection, blockchain infrastructure, or product capabilities."
+        },
+        {
+          "rule": "Do not invent product features, integrations, partnerships, performance metrics, or technical architecture."
+        }
+      ],
+      "excluded_claims": [
+        {
+          "claim": "Piggy Wallet guarantees inflation protection.",
+          "reason": "Babe’s audit did not verify a guaranteed protection mechanism, and guarantee language creates financial-risk exposure."
+        },
+        {
+          "claim": "Piggy Wallet provides risk-free savings.",
+          "reason": "Risk-free financial claims are unsupported and unsafe."
+        },
+        {
+          "claim": "Families need to understand crypto to use Piggy Wallet.",
+          "reason": "Babe’s audit indicates the opposite: Piggy Wallet should abstract technical complexity."
+        },
+        {
+          "claim": "Piggy Wallet is powered by a specific chain.",
+          "reason": "Chain-specific positioning was not confirmed in the audit and should not be used unless separately validated."
+        }
+      ],
+      "safe_framing": [
+        {
+          "framing": "Piggy Wallet is designed to help families build better savings habits.",
+          "reason": "This keeps the claim educational and mission-aligned without implying guaranteed outcomes."
+        },
+        {
+          "framing": "Piggy Wallet focuses on financial education and savings protection.",
+          "reason": "This connects the product mission to the audience need without overpromising."
+        },
+        {
+          "framing": "Piggy Wallet uses modern infrastructure under the hood while keeping the experience simple.",
+          "reason": "This explains the technology posture without requiring users to understand crypto."
+        },
+        {
+          "framing": "In inflationary environments, families need tools and habits that help them think more intentionally about saving.",
+          "reason": "This discusses inflation pressure without making financial guarantees."
+        }
+      ]
+    },
+    {
+      "type": "strategy",
+      "issue": "PIG-105",
+      "date_range": "May 11–13, 2026",
+      "expected_items": 3,
+      "messaging_pillars": [
+        {
+          "pillar": "Financial education starts early",
+          "reasoning": "Babe’s audit found that parents need simple educational language around money habits."
+        }
+      ],
+      "content_angles": [
+        {
+          "angle": "Money habits before the first paycheck",
+          "source_from_audit": "Babe recommended early financial education as a trust-building angle.",
+          "goal": "Build educational trust with parents."
+        }
+      ],
+      "weekly_structure": [
+        {
+          "date": "2026-05-11",
+          "recommended_format": "X post",
+          "platform": "X",
+          "angle": "Money habits before the first paycheck",
+          "objective": "Share a simple educational insight.",
+          "language": "EN"
+        },
+        {
+          "date": "2026-05-12",
+          "recommended_format": "X post",
+          "platform": "X",
+          "angle": "Money habits before the first paycheck",
+          "objective": "Reinforce the educational message with a second simple angle.",
+          "language": "EN"
+        },
+        {
+          "date": "2026-05-13",
+          "recommended_format": "LinkedIn post",
+          "platform": "LinkedIn",
+          "angle": "Money habits before the first paycheck",
+          "objective": "Explain the parent-facing value of early financial education.",
+          "language": "EN"
+        }
+      ],
+      "brand_constraints": [
+        {
+          "constraint": "Speak to adults and parents."
+        },
+        {
+          "constraint": "Avoid hype and unsupported claims."
+        }
+      ],
+      "content_rules": [
+        {
+          "rule": "Generate exactly 3 content items."
+        },
+        {
+          "rule": "Use version v1."
         },
         {
           "rule": "Use ISO week format YYYY-WXX."
