@@ -61,7 +61,8 @@
         "inconsistencies",
         "uncertainty",
         "opportunities",
-        "recommended_content_angles"
+        "recommended_content_angles",
+        "critical_flags"
       ],
       "properties": {
         "summary": {
@@ -204,6 +205,81 @@
               }
             }
           }
+        },
+        "critical_flags": {
+          "type": "array",
+          "description": "Machine-readable publishing, positioning, factual, or compliance risks that Porky must either block, exclude, or safely frame before strategy synthesis. Must be present even when empty.",
+          "items": {
+            "$ref": "#/$defs/critical_flag"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "critical_flag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flag",
+        "severity",
+        "affects_publishing",
+        "requires_human_confirmation",
+        "description",
+        "unsafe_claims",
+        "safe_framing"
+      ],
+      "properties": {
+        "flag": {
+          "type": "string",
+          "description": "Short name for the critical flag.",
+          "minLength": 1,
+          "examples": [
+            "Product feature specificity"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity of the risk.",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "examples": [
+            "medium"
+          ]
+        },
+        "affects_publishing": {
+          "type": "boolean",
+          "description": "Whether this risk affects publishable strategy or content."
+        },
+        "requires_human_confirmation": {
+          "type": "boolean",
+          "description": "Whether this risk requires human confirmation before it can be used in strategy or content."
+        },
+        "description": {
+          "type": "string",
+          "description": "Clear explanation of the risk, uncertainty, or conflict.",
+          "minLength": 1
+        },
+        "unsafe_claims": {
+          "type": "array",
+          "description": "Claims that should not be used downstream unless explicitly confirmed or safely reframed.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "safe_framing": {
+          "type": "array",
+          "description": "Safe alternative framing that Porky may convert into strategy constraints and Hamm may use in content.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
         }
       }
     }
@@ -248,7 +324,79 @@
             "angle": "Saving is a habit, but protection is a system.",
             "reasoning": "Connects financial education with inflation-aware product positioning."
           }
+        ],
+        "critical_flags": [
+          {
+            "flag": "Product feature specificity",
+            "severity": "medium",
+            "affects_publishing": true,
+            "requires_human_confirmation": false,
+            "description": "Exact feature availability is not confirmed in this artifact, so downstream strategy and content should avoid specific feature claims unless separately validated.",
+            "unsafe_claims": [
+              "Piggy Wallet already supports every savings feature mentioned in this campaign.",
+              "Piggy Wallet guarantees inflation protection.",
+              "Piggy Wallet provides risk-free savings."
+            ],
+            "safe_framing": [
+              "Piggy Wallet is designed to help families build better savings habits.",
+              "Piggy Wallet focuses on financial education and savings protection.",
+              "Piggy Wallet uses modern infrastructure under the hood while keeping the experience simple."
+            ]
+          },
+          {
+            "flag": "Web3 complexity risk",
+            "severity": "low",
+            "affects_publishing": true,
+            "requires_human_confirmation": false,
+            "description": "Piggy Wallet uses Web3 infrastructure, but the audience should not be required to understand crypto concepts to understand the product.",
+            "unsafe_claims": [
+              "Families need to understand crypto to use Piggy Wallet.",
+              "Parents should manage wallets, chains, and keys themselves."
+            ],
+            "safe_framing": [
+              "Piggy Wallet abstracts technical complexity.",
+              "The product should be explained through simple family outcomes.",
+              "Web3 infrastructure should remain under the hood in general-audience content."
+            ]
+          }
         ]
+      }
+    },
+    {
+      "type": "audit",
+      "issue": "PIG-105",
+      "subtask_issue": "PIG-106",
+      "entity": "Piggy Wallet",
+      "timestamp": "2026-05-01T15:00:00Z",
+      "sections": {
+        "summary": "Based on available data, no critical publishing risks were identified for this narrow research scope.",
+        "key_signals": [
+          {
+            "signal": "Piggy Wallet’s mission centers on financial education for families.",
+            "source": "Brand positioning.",
+            "interpretation": "Content can safely focus on education, habits, and trust."
+          }
+        ],
+        "inconsistencies": [],
+        "uncertainty": [
+          {
+            "gap": "No live engagement data was included.",
+            "impact": "Content angles should be validated through future performance data."
+          }
+        ],
+        "opportunities": [
+          {
+            "opportunity": "Create educational content around early money habits.",
+            "reasoning": "This aligns with Piggy Wallet’s mission and avoids unsupported technical claims."
+          }
+        ],
+        "recommended_content_angles": [
+          {
+            "angle": "Money habits start early.",
+            "reasoning": "This angle is educational, simple, and aligned with the parent audience."
+          }
+        ],
+        "critical_flags": []
       }
     }
   ]
