@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/piggywallet/open-agentic-cmo/schemas/signal.schema.json",
   "title": "Open Agentic CMO Signal",
-  "description": "Canonical schema for workflow transition signals in Open Agentic CMO.",
+  "description": "Canonical schema for workflow transition signals in Open Agentic CMO. Signals must be posted on the parent workflow issue to count as final workflow evidence. Subtask copies are allowed for traceability, but subtask-only signals are not enough for final completion.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -42,7 +42,7 @@
     },
     "issue": {
       "type": "string",
-      "description": "The parent workflow issue ID.",
+      "description": "The parent workflow issue ID. This is the canonical workflow record and source of truth.",
       "minLength": 1,
       "examples": [
         "PIG-101"
@@ -50,7 +50,7 @@
     },
     "subtask_issue": {
       "type": "string",
-      "description": "The subtask issue ID that produced the signal, when available.",
+      "description": "The subtask issue ID that produced the signal, when available. For Porky-owned parent-phase signals, this may match the parent issue or be omitted depending on runtime behavior.",
       "minLength": 1,
       "examples": [
         "PIG-103"
@@ -58,7 +58,7 @@
     },
     "status": {
       "type": "string",
-      "description": "The completion or failure state represented by the signal.",
+      "description": "The completion or failure state represented by the signal. Completion signals must use COMPLETE. Blocked, timeout, and recovery failure signals must use FAILED unless recovery has completed successfully.",
       "enum": [
         "COMPLETE",
         "FAILED"
@@ -85,6 +85,11 @@
       "examples": [
         "2026-05-01T14:20:00Z"
       ]
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional short human-readable context for blocked, timeout, or recovery signals. Do not use notes as a substitute for the required artifact.",
+      "minLength": 1
     }
   },
   "allOf": [
@@ -94,7 +99,10 @@
           "type": {
             "const": "AUDIT_READY"
           }
-        }
+        },
+        "required": [
+          "type"
+        ]
       },
       "then": {
         "properties": {
@@ -116,7 +124,10 @@
           "type": {
             "const": "SYNTHESIS_READY"
           }
-        }
+        },
+        "required": [
+          "type"
+        ]
       },
       "then": {
         "properties": {
@@ -138,7 +149,10 @@
           "type": {
             "const": "CONTENT_SET_READY"
           }
-        }
+        },
+        "required": [
+          "type"
+        ]
       },
       "then": {
         "properties": {
@@ -160,7 +174,10 @@
           "type": {
             "const": "NOTION_SYNC_COMPLETE"
           }
-        }
+        },
+        "required": [
+          "type"
+        ]
       },
       "then": {
         "properties": {
@@ -182,7 +199,10 @@
           "type": {
             "const": "DELIVERY_COMPLETE"
           }
-        }
+        },
+        "required": [
+          "type"
+        ]
       },
       "then": {
         "properties": {
@@ -204,7 +224,10 @@
           "type": {
             "const": "BLOCKED"
           }
-        }
+        },
+        "required": [
+          "type"
+        ]
       },
       "then": {
         "properties": {
@@ -218,19 +241,95 @@
       "if": {
         "properties": {
           "type": {
-            "enum": [
-              "TIMEOUT_DETECTED",
-              "RECOVERY_IN_PROGRESS",
-              "RECOVERY_COMPLETE",
-              "RETRY_REQUIRED"
-            ]
+            "const": "TIMEOUT_DETECTED"
           }
-        }
+        },
+        "required": [
+          "type"
+        ]
       },
       "then": {
         "properties": {
           "producer": {
             "const": "Porky"
+          },
+          "status": {
+            "const": "FAILED"
+          },
+          "artifact": {
+            "const": "workflow"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "RECOVERY_IN_PROGRESS"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "producer": {
+            "const": "Porky"
+          },
+          "status": {
+            "const": "FAILED"
+          },
+          "artifact": {
+            "const": "workflow"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "RECOVERY_COMPLETE"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "producer": {
+            "const": "Porky"
+          },
+          "status": {
+            "const": "COMPLETE"
+          },
+          "artifact": {
+            "const": "workflow"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "RETRY_REQUIRED"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "producer": {
+            "const": "Porky"
+          },
+          "status": {
+            "const": "FAILED"
           },
           "artifact": {
             "const": "workflow"
@@ -241,6 +340,24 @@
   ],
   "examples": [
     {
+      "type": "AUDIT_READY",
+      "producer": "Babe",
+      "issue": "PIG-101",
+      "subtask_issue": "PIG-102",
+      "status": "COMPLETE",
+      "artifact": "audit",
+      "timestamp": "2026-05-01T14:01:00Z"
+    },
+    {
+      "type": "SYNTHESIS_READY",
+      "producer": "Porky",
+      "issue": "PIG-101",
+      "subtask_issue": "PIG-101",
+      "status": "COMPLETE",
+      "artifact": "strategy",
+      "timestamp": "2026-05-01T14:10:00Z"
+    },
+    {
       "type": "CONTENT_SET_READY",
       "producer": "Hamm",
       "issue": "PIG-101",
@@ -250,13 +367,63 @@
       "timestamp": "2026-05-01T14:20:00Z"
     },
     {
-      "type": "BLOCKED",
+      "type": "NOTION_SYNC_COMPLETE",
       "producer": "Pumba",
       "issue": "PIG-101",
       "subtask_issue": "PIG-104",
+      "status": "COMPLETE",
+      "artifact": "notion_content_pipeline",
+      "timestamp": "2026-05-01T14:35:00Z"
+    },
+    {
+      "type": "DELIVERY_COMPLETE",
+      "producer": "Pumba",
+      "issue": "PIG-101",
+      "subtask_issue": "PIG-104",
+      "status": "COMPLETE",
+      "artifact": "telegram_delivery",
+      "timestamp": "2026-05-01T14:40:00Z"
+    },
+    {
+      "type": "BLOCKED",
+      "producer": "Hamm",
+      "issue": "PIG-101",
+      "subtask_issue": "PIG-103",
       "status": "FAILED",
-      "artifact": "persistence_or_delivery",
-      "timestamp": "2026-05-01T14:30:00Z"
+      "artifact": "content_generation",
+      "timestamp": "2026-05-01T14:30:00Z",
+      "notes": "Hamm is blocked because no valid strategy artifact exists."
+    },
+    {
+      "type": "BLOCKED",
+      "producer": "Porky",
+      "issue": "PIG-101",
+      "subtask_issue": "PIG-101",
+      "status": "FAILED",
+      "artifact": "workflow",
+      "timestamp": "2026-05-01T14:45:00Z",
+      "notes": "Porky blocked the workflow because CONTENT_SET_READY exists but the full content_set artifact is missing."
+    },
+    {
+      "type": "TIMEOUT_DETECTED",
+      "producer": "Porky",
+      "issue": "PIG-101",
+      "subtask_issue": "PIG-101",
+      "status": "FAILED",
+      "artifact": "workflow",
+      "timestamp": "2026-05-01T15:00:00Z",
+      "notes": "Porky timed out waiting for CONTENT_SET_READY."
+    },
+    {
+      "type": "RECOVERY_COMPLETE",
+      "producer": "Porky",
+      "issue": "PIG-101",
+      "subtask_issue": "PIG-101",
+      "status": "COMPLETE",
+      "artifact": "workflow",
+      "timestamp": "2026-05-01T15:10:00Z",
+      "notes": "Recovery completed after Hamm published the missing content_set artifact."
     }
-  ]
+  ],
+  "$comment": "Workflow-level constraints not fully expressible in JSON Schema: completion signals must be backed by valid artifacts posted on the parent issue; AUDIT_READY requires an audit artifact with critical_flags; SYNTHESIS_READY requires excluded_claims and safe_framing when audit risks affect publishing; CONTENT_SET_READY requires content to avoid excluded_claims; NOTION_SYNC_COMPLETE requires both Content Pipeline and Research Babe persistence; DELIVERY_COMPLETE requires telegram_delivery verification. Pumba should not emit BLOCKED for harmless early wake-ups before Porky explicitly delegates the Notion + Delivery phase."
 }
